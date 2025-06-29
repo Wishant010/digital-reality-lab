@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
-import HomePage from '../src/Pages/HomePage';
+import HomePage from './Pages/LandinPage/FirstScreen';
 
 // Error fallback component
 function ErrorFallback({ error, resetErrorBoundary }: { 
