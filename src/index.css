@@ -1,17 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Base reset with performance optimizations */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #10b981 #1a1a1a;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-/* Root performance optimizations */
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
@@ -24,7 +27,6 @@ body {
   background: #0a0a0a;
   color: #f8f8ff;
   overflow-x: hidden;
-  /* Performance optimizations */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
@@ -53,28 +55,8 @@ body {
   background: linear-gradient(180deg, #34d399 0%, #059669 100%);
 }
 
-/* Firefox scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #10b981 #1a1a1a;
-}
-
-/* Disable blue highlight on mobile */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
 /* Enable text selection for content areas */
 p, span, h1, h2, h3, h4, h5, h6, a, li {
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
   user-select: text;
 }
 
@@ -92,17 +74,9 @@ p, span, h1, h2, h3, h4, h5, h6, a, li {
 }
 
 /* Performance optimizations for animations */
-.will-change-transform {
-  will-change: transform;
-}
-
-.will-change-opacity {
-  will-change: opacity;
-}
-
-.will-change-filter {
-  will-change: filter;
-}
+.will-change-transform { will-change: transform; }
+.will-change-opacity { will-change: opacity; }
+.will-change-filter { will-change: filter; }
 
 /* GPU acceleration for common elements */
 .gpu-accelerated {
@@ -127,9 +101,6 @@ p, span, h1, h2, h3, h4, h5, h6, a, li {
 
 /* Enhanced button styling */
 button {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -180,13 +151,8 @@ a:hover {
 
 /* Backdrop blur support fallback */
 @supports not (backdrop-filter: blur(10px)) {
-  .backdrop-blur-xl {
-    background: rgba(0, 0, 0, 0.8) !important;
-  }
-  
-  .backdrop-blur-lg {
-    background: rgba(0, 0, 0, 0.7) !important;
-  }
+  .backdrop-blur-xl { background: rgba(0, 0, 0, 0.8) !important; }
+  .backdrop-blur-lg { background: rgba(0, 0, 0, 0.7) !important; }
 }
 
 /* Print styles */
@@ -226,14 +192,12 @@ a:hover {
 }
 
 /* Additional optimizations for your project */
-/* Smooth text rendering improvements */
 .text-crisp {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Gradient text support */
 .gradient-text {
   background-clip: text;
   -webkit-background-clip: text;
@@ -241,7 +205,6 @@ a:hover {
   background-image: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
 }
 
-/* Glassmorphism effects */
 .glass {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -249,7 +212,6 @@ a:hover {
   border: 1px solid rgba(255, 255, 255, 0.125);
 }
 
-/* Loading states */
 .loading-shimmer {
   background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
   background-size: 200% 100%;
@@ -261,7 +223,6 @@ a:hover {
   100% { background-position: 200% 0; }
 }
 
-/* Focus trap for modals */
 .focus-trap {
   position: fixed;
   top: 0;
