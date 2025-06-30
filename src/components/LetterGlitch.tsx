@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { useViewport, usePrefersReducedMotion } from "../utils/responsive";
 
 interface LetterGlitchProps {
   glitchColors?: string[];
@@ -43,9 +44,24 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
   const startTime = useRef<number>(Date.now());
   const isDestroyed = useRef<boolean>(false);
 
-  const fontSize = 16;
-  const charWidth = 10;
-  const charHeight = 20;
+  // Responsive optimizations
+  const { isMobile, isTablet, prefersReducedMotion } = useViewport();
+  const reducedMotionPreference = usePrefersReducedMotion();
+
+  // Responsive font size and performance settings
+  const fontSize = isMobile ? 12 : isTablet ? 14 : 16;
+  const charWidth = isMobile ? 8 : isTablet ? 9 : 10;
+  const charHeight = isMobile ? 16 : isTablet ? 18 : 20;
+  
+  // Adjust performance based on device
+  const actualGlitchSpeed = prefersReducedMotion || reducedMotionPreference 
+    ? glitchSpeed * 3 
+    : isMobile 
+      ? glitchSpeed * 1.5 
+      : glitchSpeed;
+
+  // Reduce letter density on mobile
+  const updateRatio = isMobile ? 0.03 : isTablet ? 0.04 : 0.05;
 
   const lettersAndSymbols = [
     "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
@@ -134,7 +150,8 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
       return;
     }
 
-    const dpr = window.devicePixelRatio || 1;
+    // Use lower DPR on mobile for better performance
+    const dpr = isMobile ? Math.min(window.devicePixelRatio || 1, 2) : window.devicePixelRatio || 1;
 
     // Set canvas size in device pixels
     canvas.width = width * dpr;
@@ -164,22 +181,33 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
     if (!container) return;
     
     const containerRect = container.getBoundingClientRect();
+    
+    // Performance optimization: clear only the necessary area
     ctx.clearRect(0, 0, containerRect.width, containerRect.height);
+    
+    // Responsive font settings
     ctx.font = `${fontSize}px monospace`;
     ctx.textBaseline = "top";
 
+    // Performance optimization: batch drawing operations
     letters.current.forEach((letter: Letter, index: number) => {
       const x = (index % grid.current.columns) * charWidth;
       const y = Math.floor(index / grid.current.columns) * charHeight;
-      ctx.fillStyle = letter.color;
-      ctx.fillText(letter.char, x, y);
+      
+      // Only draw visible letters for performance
+      if (x >= -charWidth && x <= containerRect.width + charWidth && 
+          y >= -charHeight && y <= containerRect.height + charHeight) {
+        ctx.fillStyle = letter.color;
+        ctx.fillText(letter.char, x, y);
+      }
     });
   };
 
   const updateLetters = (): void => {
     if (!letters.current || letters.current.length === 0 || isDestroyed.current) return;
 
-    const updateCount = Math.max(1, Math.floor(letters.current.length * 0.05));
+    // Responsive update count based on device performance
+    const updateCount = Math.max(1, Math.floor(letters.current.length * updateRatio));
 
     for (let i = 0; i < updateCount; i++) {
       const index = Math.floor(Math.random() * letters.current.length);
@@ -188,7 +216,7 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
       letters.current[index].char = getRandomChar();
       letters.current[index].targetColor = getRandomColor();
 
-      if (!smooth) {
+      if (!smooth || prefersReducedMotion || reducedMotionPreference) {
         letters.current[index].color = letters.current[index].targetColor;
         letters.current[index].colorProgress = 1;
       } else {
@@ -198,10 +226,15 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
   };
 
   const handleSmoothTransitions = (): void => {
+    // Skip smooth transitions if reduced motion is preferred
+    if (prefersReducedMotion || reducedMotionPreference) return;
+
     let needsRedraw = false;
+    const progressIncrement = isMobile ? 0.08 : 0.05; // Faster on mobile
+
     letters.current.forEach((letter) => {
       if (letter.colorProgress < 1) {
-        letter.colorProgress += 0.05;
+        letter.colorProgress += progressIncrement;
         if (letter.colorProgress > 1) letter.colorProgress = 1;
 
         const startRgb = hexToRgb(letter.color);
@@ -236,13 +269,14 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
       return;
     }
 
-    if (now - lastGlitchTime.current >= glitchSpeed) {
+    // Use actualGlitchSpeed for responsive performance
+    if (now - lastGlitchTime.current >= actualGlitchSpeed) {
       updateLetters();
       drawLetters();
       lastGlitchTime.current = now;
     }
 
-    if (smooth) {
+    if (smooth && !prefersReducedMotion && !reducedMotionPreference) {
       handleSmoothTransitions();
     }
 
@@ -254,7 +288,14 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
     if (!canvas) return;
 
     isDestroyed.current = false;
-    context.current = canvas.getContext("2d");
+    
+    // Get context with performance optimizations
+    context.current = canvas.getContext("2d", {
+      alpha: true,
+      willReadFrequently: false,
+      desynchronized: !isMobile // Enable desynchronized on desktop for better performance
+    });
+    
     startTime.current = Date.now();
     
     // Initial resize with slight delay to ensure container is properly sized
@@ -308,7 +349,7 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
       }
       clearTimeout(resizeTimeout);
     };
-  }, [glitchSpeed, smooth, duration, onComplete]);
+  }, [actualGlitchSpeed, smooth, duration, onComplete, isMobile, prefersReducedMotion, reducedMotionPreference]);
 
   const containerStyle: React.CSSProperties = {
     position: "absolute",
@@ -318,6 +359,10 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
     height: "100%",
     backgroundColor: "#000000",
     overflow: "hidden",
+    // Performance optimizations
+    willChange: "transform",
+    transform: "translateZ(0)",
+    backfaceVisibility: "hidden",
   };
 
   const canvasStyle: React.CSSProperties = {
@@ -327,6 +372,10 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
     width: "100%",
     height: "100%",
     display: "block",
+    // GPU acceleration
+    willChange: "transform",
+    transform: "translateZ(0)",
+    imageRendering: "auto",
   };
 
   const outerVignetteStyle: React.CSSProperties = {
@@ -337,6 +386,8 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
     height: "100%",
     pointerEvents: "none",
     background: "radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,1) 100%)",
+    // Reduced opacity on mobile for better visibility
+    opacity: isMobile ? 0.7 : 1,
   };
 
   const centerVignetteStyle: React.CSSProperties = {
@@ -347,6 +398,8 @@ const LetterGlitch: React.FC<LetterGlitchProps> = ({
     height: "100%",
     pointerEvents: "none",
     background: "radial-gradient(circle, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 60%)",
+    // Reduced opacity on mobile for better visibility
+    opacity: isMobile ? 0.6 : 0.8,
   };
 
   return (
