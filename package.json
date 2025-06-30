@@ -4,11 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest"
+    "lint": "eslint . --fix",
+    "preview": "vite preview --host",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules/.vite",
+    "analyze": "npx vite-bundle-analyzer",
+    "performance": "npm run build && npm run preview"
   },
   "dependencies": {
     "@react-three/drei": "^10.3.0",
@@ -22,24 +28,57 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@testing-library/jest-dom": "^6.1.2",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.0.11",
+    "@types/react-dom": "^19.0.4",
+    "@types/testing-library__jest-dom": "^5.14.9",
+    "@types/testing-library__react": "^10.0.1",
     "@types/three": "^0.177.0",
     "@vitejs/plugin-react": "^4.5.2",
     "autoprefixer": "^10.4.21",
+    "babel-plugin-transform-remove-console": "^6.9.4",
+    "cssnano": "^7.0.7",
     "eslint": "^9.30.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "jsdom": "^22.1.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0",
-    "vitest": "^1.5.0",
-    "jsdom": "^22.1.0",
-    "@testing-library/react": "^14.2.0",
-    "@testing-library/jest-dom": "^6.1.2",
-    "@testing-library/user-event": "^14.4.3"
-  }
+    "vite-bundle-analyzer": "^0.7.0",
+    "vitest": "^3.2.4"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wishant010/digital-reality-lab.git"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "vite",
+    "digital-reality",
+    "web-development",
+    "performance",
+    "three.js",
+    "framer-motion"
+  ],
+  "author": "Digital Reality Lab",
+  "license": "MIT",
+  "description": "High-performance digital reality web application with optimized animations and modern React architecture."
 }
