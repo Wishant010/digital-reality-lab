@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import NavbarMenu from '../components/NavbarMenu';
 import ContentSection from '../components/ContentSection';
@@ -9,7 +9,7 @@ interface HackedPageProps {
   isVisible: boolean;
 }
 
-const HackedPage = ({ isVisible }: HackedPageProps): JSX.Element | null => {
+const HackedPage = ({ isVisible }: HackedPageProps): React.ReactElement | null => {
   const [showContent, setShowContent] = useState(false);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [showOrbs, setShowOrbs] = useState(false);
