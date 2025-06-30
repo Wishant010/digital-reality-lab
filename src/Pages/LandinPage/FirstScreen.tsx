@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SplashCursor from '../../components/SplashCursor';
-import LetterGlitch from '../../components/LetterGlitch';
+
+const SplashCursor = lazy(() => import('../../components/SplashCursor'));
+const LetterGlitch = lazy(() => import('../../components/LetterGlitch'));
 
 // Type definitions
 interface AccessGrantedProps {
@@ -576,7 +577,11 @@ const HomePage: React.FC = () => {
   return (
     <div className="relative">
       {/* SplashCursor - alleen op eerste screen */}
-      {!showPage2 && <SplashCursor />}
+      {!showPage2 && (
+        <Suspense fallback={null}>
+          <SplashCursor />
+        </Suspense>
+      )}
 
       {showPage2 ? (
         <Page2 />
@@ -757,14 +762,16 @@ const HomePage: React.FC = () => {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.5 }}
                           >
-                            <LetterGlitch 
-                              onComplete={handleGlitchComplete} 
-                              duration={3000} // Increased duration to see the effect better
-                              glitchColors={["#10b981", "#06d6a0", "#118ab2", "#3b82f6", "#8b5cf6", "#f59e0b"]}
-                              glitchSpeed={50} // Slightly slower for better visibility
-                              smooth={false}
-                              className="rounded-3xl"
-                            />
+                            <Suspense fallback={null}>
+                              <LetterGlitch
+                                onComplete={handleGlitchComplete}
+                                duration={3000} // Increased duration to see the effect better
+                                glitchColors={["#10b981", "#06d6a0", "#118ab2", "#3b82f6", "#8b5cf6", "#f59e0b"]}
+                                glitchSpeed={50} // Slightly slower for better visibility
+                                smooth={false}
+                                className="rounded-3xl"
+                              />
+                            </Suspense>
                           </motion.div>
                         )}
                         

@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
-import HomePage from './Pages/LandinPage/FirstScreen';
+import { Suspense, lazy } from 'react';
+
+const HomePage = lazy(() => import('./Pages/LandinPage/FirstScreen'));
 
 // Error fallback component
 function ErrorFallback({ error, resetErrorBoundary }: { 
@@ -55,15 +57,17 @@ function App() {
       }}
     >
       <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          {/* Future routes will be added here */}
-          {/* <Route path="/experiments" element={<ExperimentsPage />} /> */}
-          {/* <Route path="/about" element={<AboutPage />} /> */}
-          {/* <Route path="/contact" element={<ContactPage />} /> */}
-          {/* <Route path="/playground" element={<PlaygroundPage />} /> */}
-          {/* <Route path="/testimonials" element={<TestimonialsPage />} /> */}
-        </Routes>
+        <Suspense fallback={<div className="p-4 text-center text-white">Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            {/* Future routes will be added here */}
+            {/* <Route path="/experiments" element={<ExperimentsPage />} /> */}
+            {/* <Route path="/about" element={<AboutPage />} /> */}
+            {/* <Route path="/contact" element={<ContactPage />} /> */}
+            {/* <Route path="/playground" element={<PlaygroundPage />} /> */}
+            {/* <Route path="/testimonials" element={<TestimonialsPage />} /> */}
+          </Routes>
+        </Suspense>
       </Router>
     </ErrorBoundary>
   );
