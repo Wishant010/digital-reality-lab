@@ -1,5 +1,5 @@
 {
-  "css.validate": true,
+  "css.validate": false,
   "less.validate": true,
   "scss.validate": true,
   "css.lint.unknownAtRules": "ignore",
@@ -17,7 +17,8 @@
   },
   "editor.inlineSuggest.enabled": true,
   "tailwindCSS.experimental.classRegex": [
-    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    "tw`([^`]*)",
+    "tw=\"([^\"]*)",
+    "tw={\"([^\"}]*)"
   ]
 }
