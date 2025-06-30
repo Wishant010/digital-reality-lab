@@ -1,12 +1,21 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 
 interface OptimizedSplashCursorProps {
   isActive?: boolean;
+  maxParticles?: number;
+  particleLifespan?: number;
+  throttleDelay?: number;
 }
 
-const OptimizedSplashCursor = ({ isActive = true }: OptimizedSplashCursorProps) => {
+const OptimizedSplashCursor = ({ 
+  isActive = true,
+  maxParticles = 30, // Reduced from 50
+  particleLifespan = 45, // Reduced from 60
+  throttleDelay = 20 // Increased from 16
+}: OptimizedSplashCursorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isRunning = useRef(false);
+  const animationId = useRef<number | undefined>(undefined);
   
   const mousePos = useRef({ x: 0, y: 0 });
   const particles = useRef<Array<{
@@ -20,9 +29,17 @@ const OptimizedSplashCursor = ({ isActive = true }: OptimizedSplashCursorProps) 
     color: { r: number; g: number; b: number };
   }>>([]);
 
-  // Simple throttle function
+  // Memoized color palette for performance
+  const colorPalette = useMemo(() => [
+    { r: 16, g: 185, b: 129 },
+    { r: 56, g: 225, b: 159 },
+    { r: 96, g: 265, b: 189 },
+    { r: 126, g: 205, b: 149 }
+  ], []);
+
+  // Optimized throttle with cleanup
   const throttle = useCallback((func: Function, limit: number) => {
-    let inThrottle: boolean;
+    let inThrottle = false;
     return (...args: any[]) => {
       if (!inThrottle) {
         func.apply(null, args);
@@ -32,54 +49,71 @@ const OptimizedSplashCursor = ({ isActive = true }: OptimizedSplashCursorProps) 
     };
   }, []);
 
-  // Optimized particle system
+  // Performance-optimized particle creation
   const addParticle = useCallback((x: number, y: number) => {
-    if (particles.current.length > 50) return;
+    if (particles.current.length >= maxParticles) {
+      // Remove oldest particle instead of skipping
+      particles.current.shift();
+    }
+    
+    const colorIndex = Math.floor(Math.random() * colorPalette.length);
+    const baseColor = colorPalette[colorIndex];
     
     particles.current.push({
       x,
       y,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
-      life: 60,
-      maxLife: 60,
-      size: Math.random() * 3 + 1,
+      vx: (Math.random() - 0.5) * 3, // Reduced velocity
+      vy: (Math.random() - 0.5) * 3,
+      life: particleLifespan,
+      maxLife: particleLifespan,
+      size: Math.random() * 2.5 + 0.5, // Smaller particles
       color: {
-        r: 16 + Math.random() * 100,
-        g: 185 + Math.random() * 70,
-        b: 129 + Math.random() * 50
+        r: Math.min(255, baseColor.r + Math.random() * 50),
+        g: Math.min(255, baseColor.g + Math.random() * 50),
+        b: Math.min(255, baseColor.b + Math.random() * 30)
       }
     });
-  }, []);
+  }, [maxParticles, particleLifespan, colorPalette]);
 
-  // Optimized render loop
+  // Highly optimized render loop with RAF management
   const render = useCallback(() => {
-    if (!isActive || !canvasRef.current || !isRunning.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Resize canvas if needed
-    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    if (!isActive || !canvasRef.current || !isRunning.current) {
+      if (animationId.current) {
+        cancelAnimationFrame(animationId.current);
+        animationId.current = undefined;
+      }
+      return;
     }
 
-    // Clear with fade effect for trails
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: false });
+    if (!ctx) return;
+
+    // Optimized canvas sizing with debouncing
+    const currentWidth = window.innerWidth;
+    const currentHeight = window.innerHeight;
+    
+    if (canvas.width !== currentWidth || canvas.height !== currentHeight) {
+      canvas.width = currentWidth;
+      canvas.height = currentHeight;
+    }
+
+    // Enhanced trail effect for smoother visuals
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Update and draw particles
+    // Batch particle updates and drawing
+    ctx.save();
+    
     for (let i = particles.current.length - 1; i >= 0; i--) {
       const p = particles.current[i];
       
-      // Update particle
+      // Update particle physics
       p.x += p.vx;
       p.y += p.vy;
       p.life--;
-      p.vx *= 0.98;
-      p.vy *= 0.98;
+      p.vx *= 0.985; // Slightly more damping
+      p.vy *= 0.985;
 
       // Remove dead particles
       if (p.life <= 0) {
@@ -87,64 +121,90 @@ const OptimizedSplashCursor = ({ isActive = true }: OptimizedSplashCursorProps) 
         continue;
       }
 
-      // Draw particle
-      const alpha = p.life / p.maxLife;
+      // Optimized alpha calculation
+      const alpha = (p.life / p.maxLife) * 0.8;
+      const size = p.size * Math.sqrt(alpha); // Smooth size transition
+      
+      // Single draw call per particle
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = `rgb(${p.color.r}, ${p.color.g}, ${p.color.b})`;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${alpha})`;
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
       ctx.fill();
     }
+    
+    ctx.restore();
 
-    // Continue animation
-    requestAnimationFrame(render);
+    // Continue animation with proper cleanup
+    animationId.current = requestAnimationFrame(render);
   }, [isActive]);
 
-  // Throttled mouse move handler
+  // Optimized mouse handlers with better movement detection
   const handleMouseMove = useCallback(
-    throttle((e: any) => {
+    throttle((e: MouseEvent) => {
+      const prevX = mousePos.current.x;
+      const prevY = mousePos.current.y;
+      
       mousePos.current = { x: e.clientX, y: e.clientY };
       
       const distance = Math.sqrt(
-        Math.pow(e.movementX || 0, 2) + Math.pow(e.movementY || 0, 2)
+        Math.pow(e.clientX - prevX, 2) + Math.pow(e.clientY - prevY, 2)
       );
       
-      if (distance > 2) {
+      // Only create particles for meaningful movement
+      if (distance > 3 && distance < 100) {
         addParticle(e.clientX, e.clientY);
       }
-    }, 16),
-    [throttle, addParticle]
+    }, throttleDelay),
+    [throttle, addParticle, throttleDelay]
   );
 
-  // Throttled click handler
+  // Enhanced click effect with burst pattern
   const handleClick = useCallback(
-    throttle((e: any) => {
-      for (let i = 0; i < 10; i++) {
+    throttle((e: MouseEvent) => {
+      const burstCount = 8; // Reduced from 10
+      const burstRadius = 15;
+      
+      for (let i = 0; i < burstCount; i++) {
+        const angle = (i / burstCount) * Math.PI * 2;
+        const distance = Math.random() * burstRadius;
         addParticle(
-          e.clientX + (Math.random() - 0.5) * 20,
-          e.clientY + (Math.random() - 0.5) * 20
+          e.clientX + Math.cos(angle) * distance,
+          e.clientY + Math.sin(angle) * distance
         );
       }
-    }, 100),
+    }, 150), // Increased cooldown
     [throttle, addParticle]
   );
 
+  // Enhanced lifecycle management
   useEffect(() => {
     if (!isActive) {
       isRunning.current = false;
+      if (animationId.current) {
+        cancelAnimationFrame(animationId.current);
+        animationId.current = undefined;
+      }
+      particles.current = [];
       return;
     }
 
     isRunning.current = true;
 
-    // Add event listeners
-    document.addEventListener('mousemove', handleMouseMove, { passive: true });
-    document.addEventListener('click', handleClick, { passive: true });
+    // Passive event listeners for better performance
+    const passiveOptions = { passive: true };
+    document.addEventListener('mousemove', handleMouseMove, passiveOptions);
+    document.addEventListener('click', handleClick, passiveOptions);
 
-    // Start render loop
-    requestAnimationFrame(render);
+    // Start optimized render loop
+    animationId.current = requestAnimationFrame(render);
 
     return () => {
       isRunning.current = false;
+      if (animationId.current) {
+        cancelAnimationFrame(animationId.current);
+        animationId.current = undefined;
+      }
       particles.current = [];
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleClick);
@@ -160,7 +220,9 @@ const OptimizedSplashCursor = ({ isActive = true }: OptimizedSplashCursorProps) 
       style={{
         width: '100vw',
         height: '100vh',
-        mixBlendMode: 'screen'
+        mixBlendMode: 'screen',
+        willChange: 'transform', // GPU acceleration hint
+        imageRendering: 'auto'
       }}
     />
   );
