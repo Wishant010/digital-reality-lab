@@ -19,7 +19,7 @@
     "skipLibCheck": true,
 
     /* Type Declarations */
-    "types": ["vitest", "node"],
+    "types": ["vitest", "node", "gsap"],
 
     /* Strictness & Linting */
     "strict": true,
