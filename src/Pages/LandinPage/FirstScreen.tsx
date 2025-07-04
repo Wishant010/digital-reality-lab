@@ -8,9 +8,6 @@ import Page2 from "../LandinPage/Page2"
 import { useViewport, useResponsiveValue } from "../../utils/responsive"
 import type { ResponsiveValue } from "../../utils/responsive"
 
-// Import animation utilities
-// (verwijderd omdat ze niet gebruikt worden)
-
 // Type definitions
 interface AccessGrantedProps {
   onComplete?: () => void
@@ -34,121 +31,62 @@ interface ParticleFieldProps {
   isActive?: boolean
 }
 
-type ButtonState = "normal" | "expanded" | "glitch" | "access" | "complete"
+type ButtonState = "normal" | "expanded" | "glitch" | "access"
 
 // Responsive configuration
 const RESPONSIVE_CONFIG = {
-  // Particle counts per device
   particleCounts: {
-    xs: 15,
-    sm: 20,
-    md: 25,
-    lg: 30,
-    xl: 35,
-    '2xl': 40,
-    '3xl': 45,
-    '4xl': 50
+    xs: 15, sm: 20, md: 25, lg: 30, xl: 35, '2xl': 40, '3xl': 45, '4xl': 50
   },
-
-  // Animation speeds per device
   animationSpeeds: {
-    xs: 120,    // Slower on mobile for battery
-    sm: 100,
-    md: 90,
-    lg: 80,
-    xl: 70,
-    '2xl': 60,
-    '3xl': 50,
-    '4xl': 40
+    xs: 120, sm: 100, md: 90, lg: 80, xl: 70, '2xl': 60, '3xl': 50, '4xl': 40
   },
-
-  // Button sizes per breakpoint
   buttonSizes: {
     normal: {
-      xs: { width: '280px', height: '50px' },
-      sm: { width: '320px', height: '55px' },
-      md: { width: '360px', height: '60px' },
-      lg: { width: '400px', height: '60px' },
-      xl: { width: '420px', height: '65px' },
-      '2xl': { width: '450px', height: '70px' },
-      '3xl': { width: '480px', height: '75px' },
-      '4xl': { width: '520px', height: '80px' }
+      xs: { width: '280px', height: '50px' }, sm: { width: '320px', height: '55px' },
+      md: { width: '360px', height: '60px' }, lg: { width: '400px', height: '60px' },
+      xl: { width: '420px', height: '65px' }, '2xl': { width: '450px', height: '70px' },
+      '3xl': { width: '480px', height: '75px' }, '4xl': { width: '520px', height: '80px' }
     },
     expanded: {
-      xs: { width: '300px', height: '120px' },
-      sm: { width: '380px', height: '140px' },
-      md: { width: '450px', height: '160px' },
-      lg: { width: '550px', height: '220px' },
-      xl: { width: '600px', height: '240px' },
-      '2xl': { width: '650px', height: '260px' },
-      '3xl': { width: '700px', height: '280px' },
-      '4xl': { width: '750px', height: '300px' }
+      xs: { width: '300px', height: '120px' }, sm: { width: '380px', height: '140px' },
+      md: { width: '450px', height: '160px' }, lg: { width: '550px', height: '220px' },
+      xl: { width: '600px', height: '240px' }, '2xl': { width: '650px', height: '260px' },
+      '3xl': { width: '700px', height: '280px' }, '4xl': { width: '750px', height: '300px' }
     }
   },
-
-  // Text sizes per breakpoint
   textSizes: {
     title: {
-      xs: 'text-3xl',
-      sm: 'text-4xl', 
-      md: 'text-5xl',
-      lg: 'text-6xl',
-      xl: 'text-7xl',
-      '2xl': 'text-8xl',
-      '3xl': 'text-9xl',
-      '4xl': 'text-[8rem]'
+      xs: 'text-3xl', sm: 'text-4xl', md: 'text-5xl', lg: 'text-6xl',
+      xl: 'text-7xl', '2xl': 'text-8xl', '3xl': 'text-9xl', '4xl': 'text-[8rem]'
     } as ResponsiveValue<string>,
-    
     subtitle: {
-      xs: 'text-sm',
-      sm: 'text-base',
-      md: 'text-lg',
-      lg: 'text-xl',
-      xl: 'text-2xl',
-      '2xl': 'text-3xl',
-      '3xl': 'text-4xl',
-      '4xl': 'text-5xl'
+      xs: 'text-sm', sm: 'text-base', md: 'text-lg', lg: 'text-xl',
+      xl: 'text-2xl', '2xl': 'text-3xl', '3xl': 'text-4xl', '4xl': 'text-5xl'
     } as ResponsiveValue<string>,
-
     button: {
-      xs: 'text-sm',
-      sm: 'text-base',
-      md: 'text-lg',
-      lg: 'text-xl',
-      xl: 'text-xl',
-      '2xl': 'text-2xl',
-      '3xl': 'text-3xl',
-      '4xl': 'text-4xl'
+      xs: 'text-sm', sm: 'text-base', md: 'text-lg', lg: 'text-xl',
+      xl: 'text-xl', '2xl': 'text-2xl', '3xl': 'text-3xl', '4xl': 'text-4xl'
     } as ResponsiveValue<string>
   },
-
-  // Spacing per breakpoint
   spacing: {
-    xs: { container: 16, elements: 24 },
-    sm: { container: 20, elements: 32 },
-    md: { container: 24, elements: 40 },
-    lg: { container: 32, elements: 48 },
-    xl: { container: 40, elements: 56 },
-    '2xl': { container: 48, elements: 64 },
-    '3xl': { container: 56, elements: 72 },
-    '4xl': { container: 64, elements: 80 }
+    xs: { container: 16, elements: 24 }, sm: { container: 20, elements: 32 },
+    md: { container: 24, elements: 40 }, lg: { container: 32, elements: 48 },
+    xl: { container: 40, elements: 56 }, '2xl': { container: 48, elements: 64 },
+    '3xl': { container: 56, elements: 72 }, '4xl': { container: 64, elements: 80 }
   }
 }
 
-// Responsive AnimatedName component
-const AnimatedName: React.FC<AnimatedNameProps> = ({ 
-  text, 
-  delay = 0, 
-  className = "" 
-}) => {
+// Animated Name Component
+const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className = "" }) => {
   const [visibleLetters, setVisibleLetters] = useState<number>(0)
-  const { prefersReducedMotion } = useViewport()
+  // Fix: get prefersReducedMotion directly in the function body
+  const prefersReducedMotion = useViewport()?.prefersReducedMotion;
   const animationSpeed = useResponsiveValue(RESPONSIVE_CONFIG.animationSpeeds)
   const titleSize = useResponsiveValue(RESPONSIVE_CONFIG.textSizes.title)
 
   useEffect(() => {
     const speed = prefersReducedMotion ? animationSpeed * 2 : animationSpeed
-    
     const interval = setInterval(() => {
       setVisibleLetters((prev) => {
         if (prev < text.length) {
@@ -159,7 +97,6 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({
         }
       })
     }, speed)
-
     return () => clearInterval(interval)
   }, [text, animationSpeed, prefersReducedMotion])
 
@@ -168,10 +105,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({
       className={`${titleSize} font-bold tracking-tight ${className}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ 
-        duration: prefersReducedMotion ? 0.3 : 0.5, 
-        delay: prefersReducedMotion ? 0 : delay 
-      }}
+      transition={{ duration: prefersReducedMotion ? 0.3 : 0.5, delay: prefersReducedMotion ? 0 : delay }}
     >
       {text.split("").map((char, index) => (
         <motion.span
@@ -213,94 +147,52 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({
   )
 }
 
-// Responsive AccessGranted component
+// Simple Access Granted Component
 const AccessGranted: React.FC<AccessGrantedProps> = ({ onComplete }) => {
   const [displayText, setDisplayText] = useState<string>("")
   const accessText = "ACCESS GRANTED"
-  const isUnmountedRef = useRef<boolean>(false)
-  const { prefersReducedMotion } = useViewport()
+  // Removed unused prefersReducedMotion
   const buttonTextSize = useResponsiveValue(RESPONSIVE_CONFIG.textSizes.button)
 
   useEffect(() => {
     let index = 0
-    isUnmountedRef.current = false
-    const speed = prefersReducedMotion ? 30 : 60
+    const speed = 60
 
     const interval = setInterval(() => {
-      if (isUnmountedRef.current) {
-        clearInterval(interval)
-        return
-      }
-
       if (index <= accessText.length) {
         setDisplayText(accessText.slice(0, index))
         index++
       } else {
         clearInterval(interval)
         setTimeout(() => {
-          if (!isUnmountedRef.current) {
-            onComplete?.()
-          }
+          onComplete?.()
         }, 1000)
       }
     }, speed)
 
-    return () => {
-      isUnmountedRef.current = true
-      clearInterval(interval)
-    }
-  }, [onComplete, prefersReducedMotion])
+    return () => clearInterval(interval)
+  }, [onComplete])
 
   return (
-    <div className="flex items-center justify-center w-full h-full bg-black/50 backdrop-blur-sm rounded-3xl border border-blue-500/30">
-      <motion.div
-        className={`font-mono ${buttonTextSize} font-bold text-center`}
-        animate={prefersReducedMotion ? {} : {
-          textShadow: [
-            "0 0 15px #3b82f6",
-            "0 0 25px #3b82f6",
-            "0 0 35px #3b82f6",
-            "0 0 25px #3b82f6",
-            "0 0 15px #3b82f6",
-          ],
-        }}
-        transition={{
-          duration: 1.5,
-          repeat: prefersReducedMotion ? 0 : Number.POSITIVE_INFINITY,
-          ease: "easeInOut",
-        }}
-      >
+    <div className="flex items-center justify-center w-full h-full bg-black/70 backdrop-blur-sm rounded-3xl border border-blue-500/30">
+      <div className={`font-mono ${buttonTextSize} font-bold text-center`}>
         <span
-          className="text-blue-400 drop-shadow-lg"
+          className="text-blue-400"
           style={{
-            textShadow: "0 0 10px #3b82f6, 0 0 20px #3b82f6, 0 2px 4px rgba(0,0,0,0.5)",
+            textShadow: "0 0 10px #3b82f6, 0 0 20px #3b82f6",
           }}
         >
           {displayText}
-          <motion.span
-            className="inline-block w-0.5 h-6 bg-blue-400 ml-1"
-            animate={{ opacity: [1, 0] }}
-            transition={{ 
-              duration: 0.5, 
-              repeat: prefersReducedMotion ? 0 : Number.POSITIVE_INFINITY 
-            }}
-            style={{
-              boxShadow: "0 0 10px #3b82f6",
-            }}
-          />
+          <span className="inline-block w-0.5 h-6 bg-blue-400 ml-1 animate-pulse" />
         </span>
-      </motion.div>
+      </div>
     </div>
   )
 }
 
-// Responsive TypingText Component
+// Typing Text Component
 const TypingText: React.FC<TypingTextProps> = ({ 
-  text, 
-  delay = 0, 
-  speed = 50, 
-  className = "", 
-  style = {} 
+  text, delay = 0, speed = 50, className = "", style = {} 
 }) => {
   const [displayText, setDisplayText] = useState<string>("")
   const [showCursor, setShowCursor] = useState<boolean>(true)
@@ -330,14 +222,12 @@ const TypingText: React.FC<TypingTextProps> = ({
   return (
     <span className={className} style={style}>
       {displayText}
-      {showCursor && (
-        <span className={prefersReducedMotion ? "" : "animate-pulse"}>|</span>
-      )}
+      {showCursor && <span className="animate-pulse">|</span>}
     </span>
   )
 }
 
-// Matrix Code Rain Component (unchanged for performance)
+// Simple Matrix Rain
 const MatrixRain: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -392,12 +282,11 @@ const MatrixRain: React.FC = () => {
     }
   }, [])
 
-  return <canvas ref={canvasRef} className="absolute inset-0 opacity-20 pointer-events-none" style={{ zIndex: 1 }} />
+  return <canvas ref={canvasRef} className="absolute inset-0 opacity-20 pointer-events-none" />
 }
 
-// Responsive ParticleField Component
+// Simple Particle Field
 const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
-  const { prefersReducedMotion } = useViewport()
   const particleCount = useResponsiveValue(RESPONSIVE_CONFIG.particleCounts)
 
   return (
@@ -411,7 +300,7 @@ const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
             top: `${Math.random() * 100}%`,
           }}
           animate={
-            isActive && !prefersReducedMotion
+            isActive
               ? {
                   x: [0, Math.random() * 200 - 100],
                   y: [0, Math.random() * 200 - 100],
@@ -422,7 +311,7 @@ const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
           }
           transition={{
             duration: Math.random() * 4 + 2,
-            repeat: prefersReducedMotion ? 0 : Number.POSITIVE_INFINITY,
+            repeat: Number.POSITIVE_INFINITY,
             ease: "easeInOut",
             delay: Math.random() * 2,
           }}
@@ -432,138 +321,67 @@ const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
   )
 }
 
-// Main HomePage Component
+// MAIN HOMEPAGE COMPONENT
 const HomePage: React.FC = () => {
   const [showAllContent, setShowAllContent] = useState<boolean>(false)
-  const [animationsActive, setAnimationsActive] = useState<boolean>(true)
-  const [scrollLocked, setScrollLocked] = useState<boolean>(true)
   const [buttonState, setButtonState] = useState<ButtonState>("normal")
   const [buttonClicked, setButtonClicked] = useState<boolean>(false)
   const [showPage2, setShowPage2] = useState<boolean>(false)
-  const [isTransitioning, setIsTransitioning] = useState<boolean>(false)
 
   const timersRef = useRef<NodeJS.Timeout[]>([])
-  const isUnmounted = useRef<boolean>(false)
 
   // Responsive hooks
-  const { prefersReducedMotion, isTablet } = useViewport()
+  const { isTablet } = useViewport()
   const subtitleSize = useResponsiveValue(RESPONSIVE_CONFIG.textSizes.subtitle)
   const buttonTextSize = useResponsiveValue(RESPONSIVE_CONFIG.textSizes.button)
   const spacing = useResponsiveValue(RESPONSIVE_CONFIG.spacing)
 
-  const cleanup = useCallback((): void => {
-    isUnmounted.current = true
-    timersRef.current.forEach((timer) => clearTimeout(timer))
-    timersRef.current = []
-  }, [])
-
-  const preventScrollDuringLock = useCallback(
-    (e: Event): boolean => {
-      if (scrollLocked && !isUnmounted.current) {
-        e.preventDefault()
-        e.stopPropagation()
-        return false
-      }
-      return true
-    },
-    [scrollLocked],
-  )
-
-  const resetAnimations = useCallback((): void => {
-    if (isUnmounted.current) return
-    setAnimationsActive(false)
-    const timer = setTimeout(() => {
-      if (!isUnmounted.current) {
-        setAnimationsActive(true)
-      }
-    }, 100)
-    timersRef.current.push(timer)
-  }, [])
-
+  // Initialize
   useEffect(() => {
-    isUnmounted.current = false
-
-    // Keep body dark
     document.body.style.backgroundColor = "#0f172a"
-    document.documentElement.style.backgroundColor = "#0f172a"
-
-    const contentTimer = setTimeout(() => {
-      if (!isUnmounted.current) {
-        setShowAllContent(true)
-      }
-    }, 500)
-    timersRef.current.push(contentTimer)
-
     document.body.style.overflow = "hidden"
     document.body.style.height = "100vh"
 
-    const preventDefault = preventScrollDuringLock
-
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if (scrollLocked && ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) {
-        e.preventDefault()
-      }
-    }
-
-    window.addEventListener("wheel", preventDefault, { passive: false })
-    window.addEventListener("touchmove", preventDefault, { passive: false })
-    window.addEventListener("keydown", handleKeyDown)
+    const contentTimer = setTimeout(() => {
+      setShowAllContent(true)
+    }, 500)
+    timersRef.current.push(contentTimer)
 
     return () => {
-      cleanup()
+      timersRef.current.forEach(timer => clearTimeout(timer))
       document.body.style.overflow = "unset"
       document.body.style.height = "auto"
-      document.body.style.backgroundColor = "#0f172a"
-      document.documentElement.style.backgroundColor = "#0f172a"
-      window.removeEventListener("wheel", preventDefault)
-      window.removeEventListener("touchmove", preventDefault)
-      window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [preventScrollDuringLock, cleanup])
+  }, [])
 
-  const handleHackButtonClick = useCallback((): void => {
-    if (buttonClicked || isUnmounted.current) return
-
+  // Button Click Handler
+  const handleHackButtonClick = useCallback(() => {
+    if (buttonClicked) return
     setButtonClicked(true)
     setButtonState("expanded")
 
-    const expandTimer = setTimeout(() => {
-      if (!isUnmounted.current) {
-        setButtonState("glitch")
-      }
-    }, 800)
-
-    timersRef.current.push(expandTimer)
+    const timer1 = setTimeout(() => setButtonState("glitch"), 800)
+    timersRef.current.push(timer1)
   }, [buttonClicked])
 
-  const handleGlitchComplete = useCallback((): void => {
-    if (isUnmounted.current) return
+  // Glitch Complete Handler
+  const handleGlitchComplete = useCallback(() => {
     setButtonState("access")
   }, [])
 
-  const handleAccessComplete = useCallback((): void => {
-    setButtonState("complete")
-    
-    const transitionTimer = setTimeout(() => {
-      if (!isUnmounted.current) {
-        setIsTransitioning(true)
-        
-        const pageTimer = setTimeout(() => {
-          if (!isUnmounted.current) {
-            setShowPage2(true)
-            resetAnimations()
-            setScrollLocked(false)
-            document.body.style.overflow = "unset"
-            document.body.style.height = "auto"
-          }
-        }, 1000)
-        timersRef.current.push(pageTimer)
-      }
-    }, 800)
-    timersRef.current.push(transitionTimer)
-  }, [resetAnimations])
+  // Access Complete Handler
+  const handleAccessComplete = useCallback(() => {
+    // Direct naar Page2 na ACCESS GRANTED
+    const timer = setTimeout(() => {
+      setShowPage2(true)
+      document.body.style.overflow = "unset"
+      document.body.style.height = "auto"
+    }, 500)
+    timersRef.current.push(timer)
+  }, [])
 
-  const getButtonDimensions = (): { width: string; height: string } => {
+  // Button Dimensions
+  const getButtonDimensions = () => {
     const currentBreakpoint = isTablet ? 'md' : 'lg'
     const buttonConfig = RESPONSIVE_CONFIG.buttonSizes
     
@@ -572,21 +390,17 @@ const HomePage: React.FC = () => {
       case "glitch":
       case "access":
         return buttonConfig.expanded[currentBreakpoint] || buttonConfig.expanded.lg
-      case "complete":
-      case "normal":
       default:
         return buttonConfig.normal[currentBreakpoint] || buttonConfig.normal.lg
     }
   }
 
-  const getButtonScale = (): number => {
+  const getButtonScale = () => {
     switch (buttonState) {
       case "expanded":
       case "glitch":
       case "access":
         return 1
-      case "complete":
-        return 0.8
       default:
         return 1
     }
@@ -594,10 +408,10 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-slate-900">
-      {/* SplashCursor - only on first screen */}
+      {/* Splash Cursor */}
       {!showPage2 && <SplashCursor />}
 
-      {/* Dark background overlay */}
+      {/* Dark background */}
       <div className="fixed inset-0 bg-slate-900 z-0" />
 
       <AnimatePresence mode="wait">
@@ -605,119 +419,49 @@ const HomePage: React.FC = () => {
           <motion.div
             key="page2"
             className="relative z-10"
-            initial={{
-              opacity: 0,
-              scale: 1.05,
-              backgroundColor: "rgba(15,23,42,1)", // Fix: use rgba for animatable color
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              backgroundColor: "rgba(15,23,42,0)", // Fix: use rgba for animatable color
-            }}
-            transition={{ 
-              duration: prefersReducedMotion ? 0.3 : 0.6, 
-              ease: [0.23, 1, 0.32, 1] 
-            }}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
           >
-            <Page2 />
+            <Page2 isVisible={true} />
           </motion.div>
         ) : (
           <motion.div
             key="homepage"
             className="min-h-screen relative overflow-hidden z-10"
             initial={{ opacity: 0 }}
-            animate={{
-              opacity: 1,
-              scale: isTransitioning ? 0.95 : 1,
-              filter: isTransitioning ? "blur(8px)" : "blur(0px)",
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.9,
-              filter: "blur(10px)",
-              y: -50,
-            }}
-            transition={{
-              duration: isTransitioning ? 0.8 : (prefersReducedMotion ? 0.5 : 1.5),
-              ease: [0.23, 1, 0.32, 1],
-            }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
           >
-            {/* Background gradient */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900"
-              animate={{
-                opacity: isTransitioning ? 0.3 : 1,
-              }}
-              transition={{ 
-                duration: prefersReducedMotion ? 0.5 : 1.5, 
-                ease: "easeOut" 
-              }}
-            />
+            {/* Background Elements */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900" />
+            <MatrixRain />
+            {!isTablet && <ParticleField isActive={true} />}
 
-            {/* Matrix rain background */}
-            <motion.div
-              animate={{
-                opacity: isTransitioning ? 0.1 : 1,
-              }}
-              transition={{ 
-                duration: prefersReducedMotion ? 0.5 : 1.5, 
-                ease: "easeOut" 
-              }}
-            >
-              <MatrixRain />
-            </motion.div>
-
-            {/* Particle field - hidden on mobile for performance */}
-            {!isTablet && (
-              <motion.div
-                animate={{
-                  opacity: isTransitioning ? 0.2 : 1,
-                }}
-                transition={{ 
-                  duration: prefersReducedMotion ? 0.5 : 1.5, 
-                  ease: "easeOut" 
-                }}
-              >
-                <ParticleField isActive={animationsActive && !isTransitioning} />
-              </motion.div>
-            )}
-
-            {/* Main content */}
-            <motion.div
+            {/* Main Content */}
+            <div
               className="relative z-20 flex flex-col items-center justify-center min-h-screen"
               style={{ padding: spacing.container }}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{
-                opacity: isTransitioning ? 0.4 : 1,
-                y: isTransitioning ? -30 : 0,
-                scale: isTransitioning ? 0.9 : 1,
-              }}
-              transition={{ 
-                duration: isTransitioning ? 1.5 : (prefersReducedMotion ? 0.5 : 1.5), 
-                ease: [0.23, 1, 0.32, 1], 
-                delay: prefersReducedMotion ? 0 : 0.5 
-              }}
             >
               {showAllContent && (
                 <>
+                  {/* Name */}
                   <motion.div 
-                    className="text-center"
-                    style={{ marginBottom: spacing.elements }}
+                    className="text-center mb-8"
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
                   >
-                    <AnimatedName text="WISHANT BHAJAN" delay={0} className="mb-4" />
+                    <AnimatedName text="WISHANT BHAJAN" delay={0} />
                   </motion.div>
 
+                  {/* Subtitle */}
                   <motion.div
-                    className="text-center"
-                    style={{ marginBottom: spacing.elements }}
-                    initial={{ opacity: 0, y: 40, scale: 0.9, filter: "blur(8px)" }}
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                    transition={{ 
-                      duration: prefersReducedMotion ? 0.3 : 1.5, 
-                      delay: prefersReducedMotion ? 0 : 0.6, 
-                      ease: [0.23, 1, 0.32, 1] 
-                    }}
+                    className="text-center mb-12"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.6 }}
                   >
                     <div className={`${subtitleSize} font-normal tracking-wide`}>
                       <TypingText
@@ -726,7 +470,7 @@ const HomePage: React.FC = () => {
                         speed={100}
                         className="text-emerald-200/90 font-sans"
                         style={{
-                          fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
+                          fontFamily: "'Inter', sans-serif",
                           fontWeight: 400,
                           letterSpacing: "0.08em",
                         }}
@@ -734,15 +478,12 @@ const HomePage: React.FC = () => {
                     </div>
                   </motion.div>
 
+                  {/* Button */}
                   <motion.div
-                    className="text-center relative"
-                    initial={{ opacity: 0, y: 60, scale: 0.9, filter: "blur(10px)" }}
-                    animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                    transition={{ 
-                      duration: prefersReducedMotion ? 0.3 : 1.5, 
-                      delay: prefersReducedMotion ? 0 : 1.0, 
-                      ease: [0.23, 1, 0.32, 1] 
-                    }}
+                    className="text-center"
+                    initial={{ opacity: 0, y: 60 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 1.0 }}
                   >
                     <motion.button
                       onClick={handleHackButtonClick}
@@ -751,29 +492,13 @@ const HomePage: React.FC = () => {
                         ...getButtonDimensions(),
                         scale: getButtonScale(),
                       }}
-                      transition={{
-                        duration: prefersReducedMotion ? 0.3 : 0.8,
-                        ease: [0.23, 1, 0.32, 1],
-                      }}
-                      whileHover={
-                        !buttonClicked && !prefersReducedMotion
-                          ? {
-                              scale: 1.1,
-                              y: -10,
-                              boxShadow: "0 25px 50px rgba(16,185,129,0.4), 0 0 80px rgba(16,185,129,0.3)",
-                              borderColor: "rgba(16,185,129,0.8)",
-                              transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] },
-                            }
-                          : {}
-                      }
-                      whileTap={
-                        !buttonClicked
-                          ? {
-                              scale: 0.95,
-                              transition: { duration: 0.1 },
-                            }
-                          : {}
-                      }
+                      transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                      whileHover={!buttonClicked ? {
+                        scale: 1.1, y: -10,
+                        boxShadow: "0 25px 50px rgba(16,185,129,0.4)",
+                        borderColor: "rgba(16,185,129,0.8)",
+                      } : {}}
+                      whileTap={!buttonClicked ? { scale: 0.95 } : {}}
                       disabled={buttonClicked}
                     >
                       <AnimatePresence mode="wait">
@@ -781,9 +506,7 @@ const HomePage: React.FC = () => {
                           <motion.div
                             key="normal"
                             className="relative z-10 flex items-center justify-center w-full h-full"
-                            initial={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
                           >
                             <span className="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent font-bold tracking-wide">
                               Hack Website
@@ -798,9 +521,8 @@ const HomePage: React.FC = () => {
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.5 }}
                           >
-                            <span className="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent font-bold tracking-wide text-2xl">
+                            <span className="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent font-bold tracking-wide">
                               Initiating Hack...
                             </span>
                           </motion.div>
@@ -813,7 +535,6 @@ const HomePage: React.FC = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.5 }}
                           >
                             <LetterGlitch
                               onComplete={handleGlitchComplete}
@@ -833,28 +554,14 @@ const HomePage: React.FC = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
                           >
                             <AccessGranted onComplete={handleAccessComplete} />
                           </motion.div>
                         )}
-
-                        {buttonState === "complete" && (
-                          <motion.div
-                            key="complete"
-                            className="relative z-10 flex items-center justify-center w-full h-full"
-                            initial={{ opacity: 0, scale: 1.2 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.5 }}
-                          >
-                            <span className="bg-gradient-to-r from-green-200 via-emerald-200 to-teal-200 bg-clip-text text-transparent font-bold tracking-wide">
-                              ✓ Hacked Successfully
-                            </span>
-                          </motion.div>
-                        )}
                       </AnimatePresence>
 
-                      {buttonState === "normal" && !prefersReducedMotion && (
+                      {/* Button Effects */}
+                      {buttonState === "normal" && (
                         <>
                           <motion.div
                             className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 rounded-3xl"
@@ -870,22 +577,8 @@ const HomePage: React.FC = () => {
                             }}
                           />
 
-                          <motion.div
-                            className="absolute inset-0 rounded-3xl"
-                            style={{
-                              background: "linear-gradient(45deg, transparent, rgba(16,185,129,0.5), transparent)",
-                            }}
-                            animate={{ rotate: [0, 360] }}
-                            transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                          />
-
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full"
-                            transition={{ duration: 0.6 }}
-                          />
-
                           <div className="absolute inset-0 overflow-hidden rounded-3xl opacity-20">
-                            {Array.from({ length: 15 }).map((_, i: number) => (
+                            {Array.from({ length: 15 }).map((_, i) => (
                               <motion.div
                                 key={i}
                                 className="absolute text-emerald-300 font-mono text-xs"
@@ -914,33 +607,7 @@ const HomePage: React.FC = () => {
                   </motion.div>
                 </>
               )}
-            </motion.div>
-
-            {/* Transition overlay */}
-            {isTransitioning && (
-              <motion.div
-                className="absolute inset-0 z-30"
-                style={{
-                  background: `
-                    radial-gradient(circle at 30% 20%, rgba(6, 78, 59, 0.8) 0%, transparent 50%),
-                    radial-gradient(circle at 70% 80%, rgba(15, 118, 110, 0.6) 0%, transparent 50%),
-                    linear-gradient(135deg, 
-                      rgba(15, 23, 42, 0.95) 0%, 
-                      rgba(6, 78, 59, 0.8) 25%, 
-                      rgba(15, 118, 110, 0.7) 50%, 
-                      rgba(6, 78, 59, 0.8) 75%, 
-                      rgba(15, 23, 42, 0.95) 100%
-                    )
-                  `,
-                }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ 
-                  duration: prefersReducedMotion ? 0.3 : 0.8, 
-                  ease: "easeOut" 
-                }}
-              />
-            )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
