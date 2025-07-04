@@ -754,3 +754,70 @@ iframe[src*="moz-extension"] {
     display: none;
   }
 }
+
+/* ========================================
+   SCROLLFLOAT COMPONENT STYLES
+   ======================================== */
+
+/* ScrollFloat container */
+.scroll-float {
+  overflow: hidden;
+}
+
+/* ScrollFloat text styling */
+.scroll-float-text {
+  display: inline-block;
+  font-size: clamp(1.6rem, 8vw, 10rem);
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Individual character styling for ScrollFloat */
+.scroll-float .char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Enhanced ScrollFloat responsive adjustments */
+@media (min-width: 640px) {
+  .scroll-float-text {
+    font-size: clamp(2rem, 10vw, 12rem);
+  }
+}
+
+@media (min-width: 768px) {
+  .scroll-float-text {
+    font-size: clamp(2.5rem, 12vw, 14rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .scroll-float-text {
+    font-size: clamp(3rem, 8vw, 10rem);
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .scroll-float-text {
+    font-size: clamp(3.5rem, 6vw, 8rem);
+  }
+}
+
+/* ScrollFloat performance optimizations */
+.scroll-float .char {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+}
+
+/* ScrollFloat accessibility considerations */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-float .char {
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+}
