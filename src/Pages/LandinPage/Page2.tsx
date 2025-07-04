@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import Navbar from "../../components/NavbarMenu"
 
 interface Page2Props {
   isVisible?: boolean
@@ -18,29 +19,75 @@ interface ParticleFieldProps {
   isActive?: boolean
 }
 
-// Letter-by-letter animated name component
+interface SectionProps {
+  children: React.ReactNode
+  id: string
+  className?: string
+}
+
+// Simplified ScrollFloat Component - removed GSAP conflicts
+interface ScrollFloatProps {
+  children: React.ReactNode
+  containerClassName?: string
+  textClassName?: string
+  delay?: number
+}
+
+const ScrollFloat: React.FC<ScrollFloatProps> = ({
+  children,
+  containerClassName = "",
+  textClassName = "",
+  delay = 0
+}) => {
+  const text = typeof children === "string" ? children : ""
+  
+  return (
+    <motion.h2 
+      className={`overflow-hidden ${containerClassName}`}
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay }}
+      viewport={{ once: true, amount: 0.3 }}
+    >
+      <span className={`inline-block font-black text-center leading-relaxed ${textClassName}`}>
+        {text.split("").map((char, index) => (
+          <motion.span
+            key={index}
+            className="inline-block"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ 
+              duration: 0.5, 
+              delay: delay + (index * 0.05),
+              ease: "easeOut"
+            }}
+            viewport={{ once: true }}
+          >
+            {char === " " ? "\u00A0" : char}
+          </motion.span>
+        ))}
+      </span>
+    </motion.h2>
+  )
+}
+
+// Fixed Section wrapper component with proper spacing
+const Section: React.FC<SectionProps> = ({ children, id, className = "" }) => (
+  <section 
+    id={id} 
+    className={`min-h-screen flex items-center justify-center py-8 px-4 ${className}`}
+    style={{ 
+      scrollMarginTop: '80px' // Offset for fixed navbar
+    }}
+  >
+    <div className="max-w-7xl mx-auto w-full">
+      {children}
+    </div>
+  </section>
+)
+
+// Optimized AnimatedName component
 const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className = "" }) => {
-  const [visibleLetters, setVisibleLetters] = useState<number>(0)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const interval = setInterval(() => {
-        setVisibleLetters((prev) => {
-          if (prev < text.length) {
-            return prev + 1
-          } else {
-            clearInterval(interval)
-            return prev
-          }
-        })
-      }, 80) // Speed between letters
-
-      return () => clearInterval(interval)
-    }, delay)
-
-    return () => clearTimeout(timer)
-  }, [text, delay])
-
   return (
     <motion.h1
       className={`text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight ${className}`}
@@ -56,29 +103,19 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
             opacity: 0,
             y: 50,
             scale: 0.3,
-            filter: "blur(10px)",
-            rotateX: -90,
           }}
-          animate={
-            index < visibleLetters
-              ? {
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  filter: "blur(0px)",
-                  rotateX: 0,
-                }
-              : {}
-          }
+          animate={{
+            opacity: 1,
+            y: 0,
+            scale: 1,
+          }}
           transition={{
-            duration: 0.8,
-            ease: [0.23, 1, 0.32, 1],
-            type: "spring",
-            stiffness: 100,
-            damping: 15,
+            duration: 0.6,
+            delay: delay + (index * 0.08),
+            ease: "easeOut",
           }}
           style={{
-            textShadow: index < visibleLetters ? "0 0 20px rgba(16,185,129,0.5)" : "none",
+            textShadow: "0 0 20px rgba(16,185,129,0.5)",
           }}
         >
           {char === " " ? "\u00A0" : char}
@@ -88,9 +125,9 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
   )
 }
 
-// ParticleField Component
+// Optimized ParticleField Component
 const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
-  const particleCount = 50
+  const particleCount = 30 // Reduced for better performance
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -105,17 +142,17 @@ const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
           animate={
             isActive
               ? {
-                  x: [0, Math.random() * 200 - 100],
-                  y: [0, Math.random() * 200 - 100],
+                  x: [0, Math.random() * 100 - 50],
+                  y: [0, Math.random() * 100 - 50],
                   opacity: [0, 1, 0],
                   scale: [0, 1, 0],
                 }
               : {}
           }
           transition={{
-            duration: Math.random() * 4 + 2,
+            duration: Math.random() * 3 + 2,
             repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
+            ease: "linear",
             delay: Math.random() * 2,
           }}
         />
@@ -124,318 +161,541 @@ const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
   )
 }
 
-// Page2 Component - Fully integrated with ContentSection content
+// Page2 Component - Fixed smooth scrolling
 const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
-  const [showName, setShowName] = useState<boolean>(false)
+  const [activeSection, setActiveSection] = useState<string>("home")
 
-  useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(() => {
-        setShowName(true)
-      }, 300)
-      return () => clearTimeout(timer)
-    } else {
-      // If not visible, reset showName or do nothing
-      setShowName(false)
-      return undefined;
+  // Smooth scroll function for navbar clicks
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const navbarHeight = 80
+      const elementPosition = element.offsetTop - navbarHeight
+      
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      })
+      setActiveSection(sectionId)
     }
-  }, [isVisible])
+  }
+
+  // Optimized Intersection Observer
+  useEffect(() => {
+    const observers: IntersectionObserver[] = []
+    
+    const sections = ["home", "about", "portfolio", "services", "contact"]
+    
+    sections.forEach(sectionId => {
+      const element = document.getElementById(sectionId)
+      if (element) {
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setActiveSection(sectionId)
+            }
+          },
+          { 
+            threshold: 0.5,
+            rootMargin: "-80px 0px -20% 0px"
+          }
+        )
+        observer.observe(element)
+        observers.push(observer)
+      }
+    })
+
+    return () => {
+      observers.forEach(observer => observer.disconnect())
+    }
+  }, [])
+
+  // Add smooth scrolling CSS and prevent default scroll behavior conflicts
+  useEffect(() => {
+    // Add smooth scrolling to html element
+    document.documentElement.style.scrollBehavior = 'smooth'
+    
+    // Prevent any scroll restoration on page refresh
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+
+    return () => {
+      document.documentElement.style.scrollBehavior = 'auto'
+    }
+  }, [])
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-      {/* Navbar */}
-      <motion.nav
-        className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-emerald-500/20"
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ 
-          y: isVisible ? 0 : -100, 
-          opacity: isVisible ? 1 : 0 
-        }}
-        transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
-      >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+      {/* Navbar with scroll function */}
+      <Navbar 
+        activeSection={activeSection} 
+        onSectionClick={scrollToSection}
+      />
+
+      {/* HOME SECTION */}
+      <Section id="home" className="relative">
+        <ParticleField isActive={isVisible} />
+        
+        <motion.div
+          className="text-center z-10 relative"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{
+            opacity: isVisible ? 1 : 0,
+            y: isVisible ? 0 : 50
+          }}
+          transition={{ duration: 1, delay: 0.5 }}
+        >
+          <AnimatedName text="WISHANT BHAJAN" delay={0} className="mb-6" />
+          
+          <motion.h2 
+            className="text-2xl md:text-4xl lg:text-5xl font-bold text-emerald-200 mb-6"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{
+              y: isVisible ? 0 : 100,
+              opacity: isVisible ? 1 : 0
+            }}
+            transition={{ delay: 1.2, duration: 1.2 }}
+          >
+            Full Stack Developer
+          </motion.h2>
+          
+          <motion.p
+            className="text-lg md:text-xl text-emerald-200/80 mb-8 max-w-2xl mx-auto leading-relaxed"
+            initial={{ y: 80, opacity: 0 }}
+            animate={{
+              y: isVisible ? 0 : 80,
+              opacity: isVisible ? 1 : 0
+            }}
+            transition={{ delay: 1.6, duration: 1.0 }}
+          >
+            Welkom in mijn digitale wereld. Hier creëer ik innovatieve weboplossingen die het verschil maken.
+          </motion.p>
+
+          <motion.button
+            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl text-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-2xl"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{
+              y: isVisible ? 0 : 100,
+              opacity: isVisible ? 1 : 0
+            }}
+            transition={{ delay: 2.0, duration: 1.0 }}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => scrollToSection('portfolio')}
+          >
+            Ontdek Mijn Werk →
+          </motion.button>
+        </motion.div>
+      </Section>
+
+      {/* ABOUT SECTION */}
+      <Section id="about" className="bg-slate-800/50">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
-            animate={{ 
-              opacity: isVisible ? 1 : 0, 
-              x: isVisible ? 0 : -50 
-            }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true, amount: 0.3 }}
           >
-            {showName && <AnimatedName text="WISHANT BHAJAN" delay={0} className="!text-2xl md:!text-3xl !mb-0" />}
-          </motion.div>
-
-          <motion.div
-            className="flex space-x-8"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ 
-              opacity: isVisible ? 1 : 0, 
-              x: isVisible ? 0 : 50 
-            }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            {["Portfolio", "About", "Skills", "Contact"].map((item, index) => (
-              <motion.a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-emerald-200/80 hover:text-emerald-200 font-medium tracking-wide transition-colors duration-300 relative group"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ 
-                  opacity: isVisible ? 1 : 0, 
-                  y: isVisible ? 0 : -20 
-                }}
-                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-              >
-                {item}
-                <motion.div className="absolute bottom-0 left-0 w-0 h-0.5 bg-emerald-400 group-hover:w-full transition-all duration-300" />
-              </motion.a>
-            ))}
-          </motion.div>
-        </div>
-      </motion.nav>
-
-      {/* Main content */}
-      <motion.div
-        className="pt-20 px-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isVisible ? 1 : 0 }}
-        transition={{ duration: 1, delay: 0.8 }}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Hero Section - Enhanced with ContentSection content */}
-          <motion.div
-            className="text-center py-20"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{
-              opacity: isVisible ? 1 : 0,
-              y: isVisible ? 0 : 50
-            }}
-            transition={{ duration: 1, delay: 1 }}
-          >
-            <motion.h2 
-              className="text-4xl md:text-5xl lg:text-7xl font-bold text-emerald-100 mb-6 md:mb-8"
-              initial={{ y: 100, opacity: 0, scale: 0.9 }}
-              animate={{
-                y: isVisible ? 0 : 100,
-                opacity: isVisible ? 1 : 0,
-                scale: isVisible ? 1 : 0.9
-              }}
-              transition={{
-                delay: isVisible ? 1.2 : 0,
-                duration: 1.2,
-                ease: [0.23, 1, 0.32, 1]
-              }}
+            <ScrollFloat
+              containerClassName="text-4xl md:text-6xl font-bold text-emerald-200 mb-6"
+              textClassName="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent"
+              delay={0.2}
             >
-              Welkom in mijn
-            </motion.h2>
+              Over Mij
+            </ScrollFloat>
             
-            <motion.h1
-              className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent mb-8"
-              animate={
-                isVisible ? {
-                  textShadow: [
-                    "0 0 20px rgba(16,185,129,0.5)",
-                    "0 0 40px rgba(16,185,129,0.8)",
-                    "0 0 20px rgba(16,185,129,0.5)",
-                  ],
-                } : {}
-              }
-              transition={{
-                duration: 3,
-                repeat: isVisible ? Number.POSITIVE_INFINITY : 0,
-                ease: "easeInOut",
-              }}
+            <motion.p 
+              className="text-lg text-emerald-200/80 mb-6 leading-relaxed"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
             >
-              Digitale Wereld
-            </motion.h1>
-            
-            <motion.p
-              className="text-lg md:text-xl text-emerald-200/80 mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed"
-              initial={{ y: 80, opacity: 0, scale: 0.95 }}
-              animate={{
-                y: isVisible ? 0 : 80,
-                opacity: isVisible ? 1 : 0,
-                scale: isVisible ? 1 : 0.95
-              }}
-              transition={{
-                delay: isVisible ? 1.6 : 0,
-                duration: 1.0,
-                ease: [0.23, 1, 0.32, 1]
-              }}
-            >
-              Hier deel ik mijn passie voor technologie, innovatie en het creëren van digitale ervaringen die het verschil maken.
+              Ik ben een gepassioneerde Full Stack Developer met een liefde voor het creëren van 
+              moderne, gebruiksvriendelijke webapplicaties. Met expertise in React, Node.js, en 
+              moderne web technologieën breng ik ideeën tot leven.
             </motion.p>
+            
+            <motion.p 
+              className="text-lg text-emerald-200/80 mb-8 leading-relaxed"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              viewport={{ once: true }}
+            >
+              Mijn focus ligt op het leveren van hoogwaardige code, intuïtieve gebruikerservaringen 
+              en innovatieve oplossingen voor complexe problemen.
+            </motion.p>
+            
+            <motion.button
+              className="px-6 py-3 border-2 border-emerald-400 text-emerald-200 font-semibold rounded-xl hover:bg-emerald-400 hover:text-slate-900 transition-all duration-300"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              viewport={{ once: true }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Meer Over Mij →
+            </motion.button>
           </motion.div>
 
-          {/* Skills Grid - Enhanced with ContentSection content */}
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 py-16"
-            initial={{ y: 120, opacity: 0, scale: 0.9 }}
-            animate={{
-              y: isVisible ? 0 : 120,
-              opacity: isVisible ? 1 : 0,
-              scale: isVisible ? 1 : 0.9
-            }}
-            transition={{
-              delay: isVisible ? 2.0 : 0,
-              duration: 1.2,
-              ease: [0.23, 1, 0.32, 1]
-            }}
+            className="relative"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true, amount: 0.3 }}
           >
-            {[
-              { title: 'Frontend Development', desc: 'React, TypeScript, Next.js' },
-              { title: 'Backend Development', desc: 'Node.js, Python, Databases' },
-              { title: 'UI/UX Design', desc: 'Figma, Prototyping, User Research' }
-            ].map((skill, index) => (
-              <motion.div
-                key={skill.title}
-                className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 md:p-6 border border-emerald-500/20"
-                initial={{ y: 80, opacity: 0, scale: 0.9 }}
-                animate={{
-                  y: isVisible ? 0 : 80,
-                  opacity: isVisible ? 1 : 0,
-                  scale: isVisible ? 1 : 0.9
-                }}
-                transition={{
-                  delay: isVisible ? 2.4 + index * 0.2 : 0,
-                  duration: 1.0,
-                  ease: [0.23, 1, 0.32, 1]
-                }}
-                whileHover={{
-                  scale: 1.08,
-                  y: -12,
-                  backgroundColor: 'rgba(255,255,255,0.15)',
-                  transition: {
-                    duration: 0.6,
-                    ease: [0.23, 1, 0.32, 1]
-                  }
-                }}
+            <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-2xl p-8 backdrop-blur-sm border border-emerald-500/30">
+              <motion.h3 
+                className="text-2xl font-bold text-emerald-200 mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
               >
-                <h3 className="text-lg md:text-xl font-semibold text-emerald-300 mb-2 md:mb-3">{skill.title}</h3>
-                <p className="text-sm md:text-base text-emerald-100/70">{skill.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Additional Content Sections */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-16"
-            initial={{ opacity: 0, y: 100 }}
-            animate={{
-              opacity: isVisible ? 1 : 0,
-              y: isVisible ? 0 : 100
-            }}
-            transition={{ duration: 1, delay: isVisible ? 3.0 : 0 }}
-          >
-            {["Projects", "Experience", "About Me"].map((section, index) => (
-              <motion.div
-                key={section}
-                className="bg-black/20 backdrop-blur-sm border border-emerald-500/30 rounded-2xl p-8 hover:border-emerald-500/60 transition-all duration-300"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{
-                  opacity: isVisible ? 1 : 0,
-                  y: isVisible ? 0 : 50
-                }}
-                transition={{ duration: 0.8, delay: isVisible ? 3.2 + index * 0.2 : 0 }}
-                whileHover={{ scale: 1.05, y: -10 }}
-              >
-                <h3 className="text-2xl font-bold text-emerald-200 mb-4">{section}</h3>
-                <p className="text-emerald-200/60">
-                  Ontdek mijn {section.toLowerCase()} en prestaties in webontwikkeling.
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Portfolio Preview Section */}
-          <motion.div
-            className="py-20"
-            initial={{ opacity: 0, y: 100 }}
-            animate={{
-              opacity: isVisible ? 1 : 0,
-              y: isVisible ? 0 : 100
-            }}
-            transition={{ duration: 1, delay: isVisible ? 4.0 : 0 }}
-          >
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-6xl font-bold text-emerald-200 mb-4">
-                Featured Projects
-              </h2>
-              <p className="text-lg text-emerald-200/70 max-w-2xl mx-auto">
-                Een selectie van mijn meest recente en innovatieve projecten
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                Skills & Expertise
+              </motion.h3>
               {[
-                {
-                  title: "E-commerce Platform",
-                  description: "Full-stack webshop met React, Node.js en Stripe integratie",
-                  tech: ["React", "Node.js", "MongoDB", "Stripe"]
-                },
-                {
-                  title: "Portfolio Dashboard",
-                  description: "Interactive dashboard voor portfolio management",
-                  tech: ["Next.js", "TypeScript", "Prisma", "PostgreSQL"]
-                }
-              ].map((project, index) => (
+                "React & Next.js",
+                "Node.js & Express",
+                "TypeScript & JavaScript", 
+                "MongoDB & PostgreSQL",
+                "AWS & Docker",
+                "UI/UX Design"
+              ].map((skill, index) => (
                 <motion.div
-                  key={project.title}
-                  className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 backdrop-blur-lg rounded-2xl p-8 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
-                  initial={{ opacity: 0, x: index === 0 ? -50 : 50 }}
-                  animate={{
-                    opacity: isVisible ? 1 : 0,
-                    x: isVisible ? 0 : (index === 0 ? -50 : 50)
-                  }}
-                  transition={{ duration: 0.8, delay: isVisible ? 4.2 + index * 0.2 : 0 }}
-                  whileHover={{ scale: 1.02, y: -5 }}
+                  key={skill}
+                  className="flex items-center mb-3"
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 + (index * 0.1) }}
+                  viewport={{ once: true }}
                 >
-                  <h3 className="text-2xl font-bold text-emerald-200 mb-4">{project.title}</h3>
-                  <p className="text-emerald-200/70 mb-6 leading-relaxed">{project.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full mr-3" />
+                  <span className="text-emerald-200/80">{skill}</span>
                 </motion.div>
               ))}
             </div>
           </motion.div>
+        </div>
+      </Section>
 
-          {/* Contact Section */}
-          <motion.div
-            className="py-20 text-center"
-            initial={{ opacity: 0, y: 100 }}
-            animate={{
-              opacity: isVisible ? 1 : 0,
-              y: isVisible ? 0 : 100
-            }}
-            transition={{ duration: 1, delay: isVisible ? 5.0 : 0 }}
+      {/* PORTFOLIO SECTION */}
+      <Section id="portfolio" className="bg-slate-900/50">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <ScrollFloat
+            containerClassName="text-4xl md:text-6xl font-bold text-emerald-200 mb-4"
+            textClassName="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent"
+            delay={0.2}
           >
-            <h2 className="text-4xl md:text-6xl font-bold text-emerald-200 mb-8">
-              Laten we samenwerken
-            </h2>
-            <p className="text-lg text-emerald-200/70 mb-12 max-w-2xl mx-auto">
-              Heb je een interessant project of wil je gewoon een gesprek? 
-              Ik hoor graag van je!
-            </p>
+            Portfolio
+          </ScrollFloat>
+          
+          <motion.p 
+            className="text-lg text-emerald-200/70 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            Een selectie van mijn meest recente en innovatieve projecten
+          </motion.p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            {
+              title: "E-commerce Platform",
+              description: "Full-stack webshop met moderne features",
+              tech: ["React", "Node.js", "MongoDB"],
+              image: "🛒"
+            },
+            {
+              title: "Dashboard App",
+              description: "Analytics dashboard met real-time data",
+              tech: ["Next.js", "TypeScript", "D3.js"],
+              image: "📊"
+            },
+            {
+              title: "Mobile App",
+              description: "Cross-platform mobile applicatie",
+              tech: ["React Native", "Firebase"],
+              image: "📱"
+            }
+          ].map((project, index) => (
+            <motion.div
+              key={project.title}
+              className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: index * 0.2 }}
+              viewport={{ once: true, amount: 0.3 }}
+              whileHover={{ scale: 1.02, y: -5 }}
+            >
+              <div className="text-4xl mb-4">{project.image}</div>
+              <h3 className="text-xl font-bold text-emerald-200 mb-3">{project.title}</h3>
+              <p className="text-emerald-200/70 mb-4 leading-relaxed">{project.description}</p>
+              
+              <div className="flex flex-wrap gap-2 mb-4">
+                {project.tech.map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <motion.button
+                className="w-full py-2 bg-emerald-500/20 text-emerald-200 rounded-lg hover:bg-emerald-500/30 transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Bekijk Project →
+              </motion.button>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          className="text-center mt-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <motion.button
+            className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl text-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-2xl"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Alle Projecten Bekijken →
+          </motion.button>
+        </motion.div>
+      </Section>
+
+      {/* SERVICES SECTION */}
+      <Section id="services" className="bg-slate-800/30">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <ScrollFloat
+            containerClassName="text-4xl md:text-6xl font-bold text-emerald-200 mb-4"
+            textClassName="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent"
+            delay={0.2}
+          >
+            Services
+          </ScrollFloat>
+          
+          <motion.p 
+            className="text-lg text-emerald-200/70 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            Wat ik voor jou kan betekenen in de digitale wereld
+          </motion.p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            {
+              title: "Frontend Development",
+              description: "Moderne, responsive webapplicaties met React, Next.js en TypeScript",
+              icon: "💻"
+            },
+            {
+              title: "Backend Development", 
+              description: "Robuuste server-side oplossingen met Node.js, APIs en databases",
+              icon: "⚙️"
+            },
+            {
+              title: "UI/UX Design",
+              description: "Intuïtieve gebruikerservaringen en aantrekkelijke interfaces",
+              icon: "🎨"
+            },
+            {
+              title: "E-commerce Solutions",
+              description: "Complete webshops en verkoop platforms op maat",
+              icon: "🛍️"
+            },
+            {
+              title: "Performance Optimization",
+              description: "Snellere websites en betere gebruikerservaringen",
+              icon: "🚀"
+            },
+            {
+              title: "Consulting",
+              description: "Technisch advies en strategische begeleiding voor je project",
+              icon: "💡"
+            }
+          ].map((service, index) => (
+            <motion.div
+              key={service.title}
+              className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 backdrop-blur-lg rounded-2xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
+              viewport={{ once: true, amount: 0.3 }}
+              whileHover={{ scale: 1.02, y: -5 }}
+            >
+              <div className="text-4xl mb-4">{service.icon}</div>
+              <h3 className="text-xl font-bold text-emerald-200 mb-3">{service.title}</h3>
+              <p className="text-emerald-200/70 mb-6 leading-relaxed">{service.description}</p>
+              
+              <motion.button
+                className="text-emerald-400 font-semibold hover:text-emerald-300 transition-colors duration-300"
+                whileHover={{ x: 5 }}
+              >
+                Meer Info →
+              </motion.button>
+            </motion.div>
+          ))}
+        </div>
+      </Section>
+
+      {/* CONTACT SECTION */}
+      <Section id="contact" className="bg-slate-900/70">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <ScrollFloat
+              containerClassName="text-4xl md:text-6xl font-bold text-emerald-200 mb-6"
+              textClassName="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent"
+              delay={0.2}
+            >
+              Plan een Gesprek
+            </ScrollFloat>
+            
+            <motion.p 
+              className="text-lg text-emerald-200/80 mb-8 leading-relaxed"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              Heb je een interessant project of wil je gewoon kennismaken? 
+              Ik hoor graag van je! Laten we samen bespreken hoe ik jouw digitale doelen kan realiseren.
+            </motion.p>
+
+            <div className="space-y-4 mb-8">
+              {[
+                { icon: "📧", label: "Email", value: "wishant@example.com" },
+                { icon: "📱", label: "Telefoon", value: "+31 6 12345678" },
+                { icon: "📍", label: "Locatie", value: "Nederland" }
+              ].map((contact, index) => (
+                <motion.div
+                  key={contact.label}
+                  className="flex items-center"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 + (index * 0.1) }}
+                  viewport={{ once: true }}
+                >
+                  <span className="text-2xl mr-4">{contact.icon}</span>
+                  <div>
+                    <div className="text-emerald-400 font-semibold">{contact.label}</div>
+                    <div className="text-emerald-200/70">{contact.value}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
             <motion.button
               className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-2xl text-lg hover:from-emerald-600 hover:to-teal-600 transition-all duration-300 shadow-2xl"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              viewport={{ once: true }}
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
-              Contact Opnemen
+              Plan Gesprek →
             </motion.button>
           </motion.div>
-        </div>
-      </motion.div>
 
-      <ParticleField isActive={isVisible} />
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-2xl p-8 backdrop-blur-sm border border-emerald-500/30">
+              <motion.h3 
+                className="text-2xl font-bold text-emerald-200 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                Snelle Reactie
+              </motion.h3>
+              <form className="space-y-4">
+                <motion.input
+                  type="text"
+                  placeholder="Jouw naam"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-emerald-200 placeholder-emerald-200/50 focus:border-emerald-400 focus:outline-none transition-colors duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  viewport={{ once: true }}
+                />
+                <motion.input
+                  type="email"
+                  placeholder="Email adres"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-emerald-200 placeholder-emerald-200/50 focus:border-emerald-400 focus:outline-none transition-colors duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  viewport={{ once: true }}
+                />
+                <motion.textarea
+                  placeholder="Vertel over je project..."
+                  rows={4}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-emerald-500/30 rounded-lg text-emerald-200 placeholder-emerald-200/50 focus:border-emerald-400 focus:outline-none transition-colors duration-300 resize-none"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  viewport={{ once: true }}
+                />
+                <motion.button
+                  type="submit"
+                  className="w-full py-3 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition-colors duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.9 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Verstuur Bericht
+                </motion.button>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      </Section>
     </div>
   )
 }
