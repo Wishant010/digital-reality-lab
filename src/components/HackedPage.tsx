@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import NavbarMenu from '../components/NavbarMenu';
-import ContentSection from '../components/ContentSection';
+// import ContentSection from '../components/ContentSection';
 import SmoothText from '../Type-manieren/SmoothText';
 import { FloatingOrbs } from '../Vormen/CombinedVisualComponents';
 
@@ -46,7 +46,7 @@ const HackedPage = ({ isVisible }: HackedPageProps): React.ReactElement | null =
 
   return (
     <div className="relative">
-      <NavbarMenu isVisible={showContent && !isScrolledUp} />
+      <NavbarMenu />
 
       <motion.div 
         className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900"
@@ -194,7 +194,7 @@ const HackedPage = ({ isVisible }: HackedPageProps): React.ReactElement | null =
         </motion.div>
       </motion.div>
 
-      <ContentSection isVisible={showContent} />
+      {/* <ContentSection isVisible={showContent} /> */}
     </div>
   );
 };
