@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo, memo } from "react"
 import { motion } from "framer-motion"
 import Navbar from "../../components/NavbarMenu"
 
@@ -25,7 +25,7 @@ interface SectionProps {
   className?: string
 }
 
-// Simplified ScrollFloat Component - removed GSAP conflicts
+// Memoized ScrollFloat Component - Optimized for performance
 interface ScrollFloatProps {
   children: React.ReactNode
   containerClassName?: string
@@ -33,13 +33,16 @@ interface ScrollFloatProps {
   delay?: number
 }
 
-const ScrollFloat: React.FC<ScrollFloatProps> = ({
+const ScrollFloat = memo<ScrollFloatProps>(({
   children,
   containerClassName = "",
   textClassName = "",
   delay = 0
 }) => {
   const text = typeof children === "string" ? children : ""
+  
+  // Memoize the character split to prevent unnecessary re-renders
+  const characters = useMemo(() => text.split(""), [text])
   
   return (
     <motion.h2 
@@ -50,7 +53,7 @@ const ScrollFloat: React.FC<ScrollFloatProps> = ({
       viewport={{ once: true, amount: 0.3 }}
     >
       <span className={`inline-block font-black text-center leading-relaxed ${textClassName}`}>
-        {text.split("").map((char, index) => (
+        {characters.map((char, index) => (
           <motion.span
             key={index}
             className="inline-block"
@@ -69,10 +72,12 @@ const ScrollFloat: React.FC<ScrollFloatProps> = ({
       </span>
     </motion.h2>
   )
-}
+})
 
-// Fixed Section wrapper component with proper spacing
-const Section: React.FC<SectionProps> = ({ children, id, className = "" }) => (
+ScrollFloat.displayName = 'ScrollFloat'
+
+// Optimized Section wrapper component
+const Section = memo<SectionProps>(({ children, id, className = "" }) => (
   <section 
     id={id} 
     className={`min-h-screen flex items-center justify-center py-8 px-4 ${className}`}
@@ -84,10 +89,14 @@ const Section: React.FC<SectionProps> = ({ children, id, className = "" }) => (
       {children}
     </div>
   </section>
-)
+))
 
-// Optimized AnimatedName component
-const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className = "" }) => {
+Section.displayName = 'Section'
+
+// Highly optimized AnimatedName component
+const AnimatedName = memo<AnimatedNameProps>(({ text, delay = 0, className = "" }) => {
+  const characters = useMemo(() => text.split(""), [text])
+  
   return (
     <motion.h1
       className={`text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight ${className}`}
@@ -95,7 +104,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay }}
     >
-      {text.split("").map((char, index) => (
+      {characters.map((char, index) => (
         <motion.span
           key={index}
           className="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 bg-clip-text text-transparent inline-block"
@@ -123,50 +132,196 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
       ))}
     </motion.h1>
   )
-}
+})
 
-// Optimized ParticleField Component
-const ParticleField: React.FC<ParticleFieldProps> = ({ isActive = true }) => {
-  const particleCount = 30 // Reduced for better performance
+AnimatedName.displayName = 'AnimatedName'
+
+// Lightweight ParticleField Component with reduced particle count
+const ParticleField = memo<ParticleFieldProps>(({ isActive = true }) => {
+  const particleCount = 20 // Reduced from 30 for better performance
+  
+  const particles = useMemo(() => 
+    Array.from({ length: particleCount }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      animateX: Math.random() * 100 - 50,
+      animateY: Math.random() * 100 - 50,
+      duration: Math.random() * 3 + 2,
+      delay: Math.random() * 2
+    }))
+  , [particleCount])
+
+  if (!isActive) return null
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {Array.from({ length: particleCount }).map((_, i) => (
+      {particles.map((particle) => (
         <motion.div
-          key={i}
+          key={particle.id}
           className="absolute w-1 h-1 bg-emerald-400/30 rounded-full"
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
           }}
-          animate={
-            isActive
-              ? {
-                  x: [0, Math.random() * 100 - 50],
-                  y: [0, Math.random() * 100 - 50],
-                  opacity: [0, 1, 0],
-                  scale: [0, 1, 0],
-                }
-              : {}
-          }
+          animate={{
+            x: [0, particle.animateX],
+            y: [0, particle.animateY],
+            opacity: [0, 1, 0],
+            scale: [0, 1, 0],
+          }}
           transition={{
-            duration: Math.random() * 3 + 2,
+            duration: particle.duration,
             repeat: Number.POSITIVE_INFINITY,
             ease: "linear",
-            delay: Math.random() * 2,
+            delay: particle.delay,
           }}
         />
       ))}
     </div>
   )
-}
+})
 
-// Page2 Component - Fixed smooth scrolling
-const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
+ParticleField.displayName = 'ParticleField'
+
+// Memoized project data to prevent re-creation
+const projectsData = [
+  {
+    title: "E-commerce Platform",
+    description: "Full-stack webshop met moderne features",
+    tech: ["React", "Node.js", "MongoDB"],
+    image: "🛒"
+  },
+  {
+    title: "Dashboard App",
+    description: "Analytics dashboard met real-time data",
+    tech: ["Next.js", "TypeScript", "D3.js"],
+    image: "📊"
+  },
+  {
+    title: "Mobile App",
+    description: "Cross-platform mobile applicatie",
+    tech: ["React Native", "Firebase"],
+    image: "📱"
+  }
+]
+
+const servicesData = [
+  {
+    title: "Frontend Development",
+    description: "Moderne, responsive webapplicaties met React, Next.js en TypeScript",
+    icon: "💻"
+  },
+  {
+    title: "Backend Development", 
+    description: "Robuuste server-side oplossingen met Node.js, APIs en databases",
+    icon: "⚙️"
+  },
+  {
+    title: "UI/UX Design",
+    description: "Intuïtieve gebruikerservaringen en aantrekkelijke interfaces",
+    icon: "🎨"
+  },
+  {
+    title: "E-commerce Solutions",
+    description: "Complete webshops en verkoop platforms op maat",
+    icon: "🛍️"
+  },
+  {
+    title: "Performance Optimization",
+    description: "Snellere websites en betere gebruikerservaringen",
+    icon: "🚀"
+  },
+  {
+    title: "Consulting",
+    description: "Technisch advies en strategische begeleiding voor je project",
+    icon: "💡"
+  }
+]
+
+const skillsData = [
+  "React & Next.js",
+  "Node.js & Express",
+  "TypeScript & JavaScript", 
+  "MongoDB & PostgreSQL",
+  "AWS & Docker",
+  "UI/UX Design"
+]
+
+const contactData = [
+  { icon: "📧", label: "Email", value: "wishant@example.com" },
+  { icon: "📱", label: "Telefoon", value: "+31 6 12345678" },
+  { icon: "📍", label: "Locatie", value: "Nederland" }
+]
+
+// Memoized Project Card Component
+const ProjectCard = memo<{project: typeof projectsData[0], index: number}>(({ project, index }) => (
+  <motion.div
+    className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
+    initial={{ opacity: 0, y: 50 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, delay: index * 0.2 }}
+    viewport={{ once: true, amount: 0.3 }}
+    whileHover={{ scale: 1.02, y: -5 }}
+  >
+    <div className="text-4xl mb-4">{project.image}</div>
+    <h3 className="text-xl font-bold text-emerald-200 mb-3">{project.title}</h3>
+    <p className="text-emerald-200/70 mb-4 leading-relaxed">{project.description}</p>
+    
+    <div className="flex flex-wrap gap-2 mb-4">
+      {project.tech.map((tech) => (
+        <span
+          key={tech}
+          className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium"
+        >
+          {tech}
+        </span>
+      ))}
+    </div>
+
+    <motion.button
+      className="w-full py-2 bg-emerald-500/20 text-emerald-200 rounded-lg hover:bg-emerald-500/30 transition-all duration-300"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      Bekijk Project →
+    </motion.button>
+  </motion.div>
+))
+
+ProjectCard.displayName = 'ProjectCard'
+
+// Memoized Service Card Component  
+const ServiceCard = memo<{service: typeof servicesData[0], index: number}>(({ service, index }) => (
+  <motion.div
+    className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 backdrop-blur-lg rounded-2xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
+    initial={{ opacity: 0, y: 50 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, delay: index * 0.1 }}
+    viewport={{ once: true, amount: 0.3 }}
+    whileHover={{ scale: 1.02, y: -5 }}
+  >
+    <div className="text-4xl mb-4">{service.icon}</div>
+    <h3 className="text-xl font-bold text-emerald-200 mb-3">{service.title}</h3>
+    <p className="text-emerald-200/70 mb-6 leading-relaxed">{service.description}</p>
+    
+    <motion.button
+      className="text-emerald-400 font-semibold hover:text-emerald-300 transition-colors duration-300"
+      whileHover={{ x: 5 }}
+    >
+      Meer Info →
+    </motion.button>
+  </motion.div>
+))
+
+ServiceCard.displayName = 'ServiceCard'
+
+// Main Page2 Component - Heavily optimized
+const Page2 = memo<Page2Props>(({ isVisible = true }) => {
   const [activeSection, setActiveSection] = useState<string>("home")
 
-  // Smooth scroll function for navbar clicks
-  const scrollToSection = (sectionId: string) => {
+  // Memoized scroll function
+  const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId)
     if (element) {
       const navbarHeight = 80
@@ -178,12 +333,13 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
       })
       setActiveSection(sectionId)
     }
-  }
+  }, [])
 
-  // Optimized Intersection Observer
+  // Optimized Intersection Observer with cleanup
   useEffect(() => {
+    if (!isVisible) return
+
     const observers: IntersectionObserver[] = []
-    
     const sections = ["home", "about", "portfolio", "services", "contact"]
     
     sections.forEach(sectionId => {
@@ -208,14 +364,18 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
     return () => {
       observers.forEach(observer => observer.disconnect())
     }
-  }, [])
+  }, [isVisible])
 
-  // Add smooth scrolling CSS and prevent default scroll behavior conflicts
+  // Set document styles once when component mounts
   useEffect(() => {
-    // Add smooth scrolling to html element
+    if (!isVisible) return
+
+    // Apply smooth scrolling
     document.documentElement.style.scrollBehavior = 'smooth'
+    document.body.style.overflow = 'auto'
+    document.body.style.height = 'auto'
     
-    // Prevent any scroll restoration on page refresh
+    // Prevent scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual'
     }
@@ -223,10 +383,13 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
     return () => {
       document.documentElement.style.scrollBehavior = 'auto'
     }
-  }, [])
+  }, [isVisible])
+
+  // Don't render if not visible to save performance
+  if (!isVisible) return null
 
   return (
-    <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+    <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 page-container page2-container scrollable-hidden" style={{ minHeight: '100vh' }}>
       {/* Navbar with scroll function */}
       <Navbar 
         activeSection={activeSection} 
@@ -359,14 +522,7 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
               >
                 Skills & Expertise
               </motion.h3>
-              {[
-                "React & Next.js",
-                "Node.js & Express",
-                "TypeScript & JavaScript", 
-                "MongoDB & PostgreSQL",
-                "AWS & Docker",
-                "UI/UX Design"
-              ].map((skill, index) => (
+              {skillsData.map((skill, index) => (
                 <motion.div
                   key={skill}
                   className="flex items-center mb-3"
@@ -413,58 +569,8 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            {
-              title: "E-commerce Platform",
-              description: "Full-stack webshop met moderne features",
-              tech: ["React", "Node.js", "MongoDB"],
-              image: "🛒"
-            },
-            {
-              title: "Dashboard App",
-              description: "Analytics dashboard met real-time data",
-              tech: ["Next.js", "TypeScript", "D3.js"],
-              image: "📊"
-            },
-            {
-              title: "Mobile App",
-              description: "Cross-platform mobile applicatie",
-              tech: ["React Native", "Firebase"],
-              image: "📱"
-            }
-          ].map((project, index) => (
-            <motion.div
-              key={project.title}
-              className="bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-lg rounded-2xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
-              viewport={{ once: true, amount: 0.3 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <div className="text-4xl mb-4">{project.image}</div>
-              <h3 className="text-xl font-bold text-emerald-200 mb-3">{project.title}</h3>
-              <p className="text-emerald-200/70 mb-4 leading-relaxed">{project.description}</p>
-              
-              <div className="flex flex-wrap gap-2 mb-4">
-                {project.tech.map((tech) => (
-                  <span
-                    key={tech}
-                    className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm font-medium"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              <motion.button
-                className="w-full py-2 bg-emerald-500/20 text-emerald-200 rounded-lg hover:bg-emerald-500/30 transition-all duration-300"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Bekijk Project →
-              </motion.button>
-            </motion.div>
+          {projectsData.map((project, index) => (
+            <ProjectCard key={project.title} project={project} index={index} />
           ))}
         </div>
 
@@ -514,58 +620,8 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            {
-              title: "Frontend Development",
-              description: "Moderne, responsive webapplicaties met React, Next.js en TypeScript",
-              icon: "💻"
-            },
-            {
-              title: "Backend Development", 
-              description: "Robuuste server-side oplossingen met Node.js, APIs en databases",
-              icon: "⚙️"
-            },
-            {
-              title: "UI/UX Design",
-              description: "Intuïtieve gebruikerservaringen en aantrekkelijke interfaces",
-              icon: "🎨"
-            },
-            {
-              title: "E-commerce Solutions",
-              description: "Complete webshops en verkoop platforms op maat",
-              icon: "🛍️"
-            },
-            {
-              title: "Performance Optimization",
-              description: "Snellere websites en betere gebruikerservaringen",
-              icon: "🚀"
-            },
-            {
-              title: "Consulting",
-              description: "Technisch advies en strategische begeleiding voor je project",
-              icon: "💡"
-            }
-          ].map((service, index) => (
-            <motion.div
-              key={service.title}
-              className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 backdrop-blur-lg rounded-2xl p-6 border border-emerald-500/20 hover:border-emerald-500/40 transition-all duration-300"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              whileHover={{ scale: 1.02, y: -5 }}
-            >
-              <div className="text-4xl mb-4">{service.icon}</div>
-              <h3 className="text-xl font-bold text-emerald-200 mb-3">{service.title}</h3>
-              <p className="text-emerald-200/70 mb-6 leading-relaxed">{service.description}</p>
-              
-              <motion.button
-                className="text-emerald-400 font-semibold hover:text-emerald-300 transition-colors duration-300"
-                whileHover={{ x: 5 }}
-              >
-                Meer Info →
-              </motion.button>
-            </motion.div>
+          {servicesData.map((service, index) => (
+            <ServiceCard key={service.title} service={service} index={index} />
           ))}
         </div>
       </Section>
@@ -599,11 +655,7 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
             </motion.p>
 
             <div className="space-y-4 mb-8">
-              {[
-                { icon: "📧", label: "Email", value: "wishant@example.com" },
-                { icon: "📱", label: "Telefoon", value: "+31 6 12345678" },
-                { icon: "📍", label: "Locatie", value: "Nederland" }
-              ].map((contact, index) => (
+              {contactData.map((contact, index) => (
                 <motion.div
                   key={contact.label}
                   className="flex items-center"
@@ -698,6 +750,8 @@ const Page2: React.FC<Page2Props> = ({ isVisible = true }) => {
       </Section>
     </div>
   )
-}
+})
+
+Page2.displayName = 'Page2'
 
 export default Page2
