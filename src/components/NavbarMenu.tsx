@@ -1,10 +1,89 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react"
 import { motion, Transition } from "framer-motion"
 import { useViewport } from "../utils/responsive"
 
-// BlurText Component
+// Session Management Utility - ALLEEN TIJDENS BROWSER SESSIE
+const SESSION_KEY = 'wishant_website_session'
+const SESSION_DURATION = 30 * 60 * 1000 // 30 minutes in milliseconds
+
+export const SessionManager = {
+  setSession: () => {
+    const sessionData = {
+      timestamp: Date.now(),
+      hasVisited: true,
+      visitCount: SessionManager.getVisitCount() + 1
+    }
+    try {
+      // Gebruik sessionStorage i.p.v. localStorage - wordt gewist bij browser sluiten
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData))
+    } catch (error) {
+      console.warn('Session storage not available:', error)
+    }
+  },
+  
+  hasValidSession: (): boolean => {
+    try {
+      // Check sessionStorage i.p.v. localStorage
+      const stored = sessionStorage.getItem(SESSION_KEY)
+      if (!stored) return false
+      
+      const sessionData = JSON.parse(stored)
+      const now = Date.now()
+      const isValid = (now - sessionData.timestamp) < SESSION_DURATION
+      
+      return isValid && sessionData.hasVisited
+    } catch (error) {
+      console.warn('Session check failed:', error)
+      return false
+    }
+  },
+  
+  getVisitCount: (): number => {
+    try {
+      // Check sessionStorage i.p.v. localStorage
+      const stored = sessionStorage.getItem(SESSION_KEY)
+      if (!stored) return 0
+      
+      const sessionData = JSON.parse(stored)
+      return sessionData.visitCount || 0
+    } catch (error) {
+      return 0
+    }
+  },
+  
+  shouldSkipHack: (): boolean => {
+    const visitCount = SessionManager.getVisitCount()
+    return visitCount >= 2 || SessionManager.hasValidSession()
+  },
+  
+  clearSession: () => {
+    try {
+      // Clear sessionStorage i.p.v. localStorage
+      sessionStorage.removeItem(SESSION_KEY)
+    } catch (error) {
+      console.warn('Failed to clear session:', error)
+    }
+  },
+
+  // Extra: Reset sessie bij nieuwe browser sessie
+  initializeSession: () => {
+    try {
+      // Check of we een nieuwe browser sessie hebben
+      const sessionExists = sessionStorage.getItem(SESSION_KEY)
+      if (!sessionExists) {
+        // Nieuwe browser sessie - reset alles
+        return false
+      }
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+}
+
+// BlurText Component - Memoized for performance
 type BlurTextProps = {
   text?: string
   delay?: number
@@ -35,7 +114,7 @@ const buildKeyframes = (
   return keyframes
 }
 
-const BlurText: React.FC<BlurTextProps> = ({
+const BlurText = memo<BlurTextProps>(({
   text = '',
   delay = 200,
   className = '',
@@ -49,7 +128,10 @@ const BlurText: React.FC<BlurTextProps> = ({
   onAnimationComplete,
   stepDuration = 0.35,
 }) => {
-  const elements = animateBy === 'words' ? text.split(' ') : text.split('')
+  const elements = useMemo(() => 
+    animateBy === 'words' ? text.split(' ') : text.split(''), 
+    [text, animateBy]
+  )
   const [inView, setInView] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -125,9 +207,11 @@ const BlurText: React.FC<BlurTextProps> = ({
       })}
     </div>
   )
-}
+})
 
-// Navbar Component
+BlurText.displayName = 'BlurText'
+
+// Navbar Component - Highly optimized
 interface NavbarProps {
   activeSection?: string
   onSectionClick?: (sectionId: string) => void
@@ -147,24 +231,37 @@ const navItems: NavItem[] = [
   { id: "contact", label: "Contact", href: "#contact" },
 ]
 
-const Navbar: React.FC<NavbarProps> = ({ activeSection = "home", onSectionClick }) => {
+const Navbar = memo<NavbarProps>(({ activeSection = "home", onSectionClick }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
   // Remove unused destructured values from useViewport
   useViewport()
 
-  // Scroll detection
+  // Optimized scroll detection with throttling
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+      
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolled(window.scrollY > 50)
+      }, 10) // Throttle to 10ms
     }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
   }, [])
 
-  // Handle navigation click
-  const handleNavClick = (item: NavItem) => {
+  // Memoized navigation click handler
+  const handleNavClick = useCallback((item: NavItem) => {
     setIsMobileMenuOpen(false)
     
     if (onSectionClick) {
@@ -179,7 +276,17 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection = "home", onSectionClick 
         block: "start"
       })
     }
-  }
+  }, [onSectionClick])
+
+  // Memoized mobile menu toggle
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev)
+  }, [])
+
+  // Memoized close mobile menu
+  const closeMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false)
+  }, [])
 
   return (
     <motion.nav
@@ -269,7 +376,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection = "home", onSectionClick 
           {/* Mobile menu button */}
           <motion.button
             className="md:hidden relative w-8 h-8 flex flex-col justify-center items-center"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={toggleMobileMenu}
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -343,11 +450,13 @@ const Navbar: React.FC<NavbarProps> = ({ activeSection = "home", onSectionClick 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={() => setIsMobileMenuOpen(false)}
+          onClick={closeMobileMenu}
         />
       )}
     </motion.nav>
   )
-}
+})
+
+Navbar.displayName = 'Navbar'
 
 export default Navbar
