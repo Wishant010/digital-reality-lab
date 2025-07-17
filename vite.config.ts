@@ -3,10 +3,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { writeFileSync } from 'fs';
 
 export default defineConfig({
-  base: '/', // ✅ Nodig voor GitHub Pages root deployment
+  base: './', // ✅ Belangrijk voor GitHub Pages!
   plugins: [
     react({
       babel: {
@@ -15,15 +14,8 @@ export default defineConfig({
         ].filter(Boolean) as string[]
       },
       jsxRuntime: 'automatic'
-    }),
-    {
-      // ✅ Genereer CNAME bestand voor GitHub Pages custom domain
-      name: 'generate-cname',
-      closeBundle() {
-        writeFileSync('dist/CNAME', 'wishantbhajan.nl');
-      }
-    }
-  ],
+    })
+  ] as any[],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -61,25 +53,29 @@ export default defineConfig({
           'vendor-three': ['three', '@react-three/fiber', '@react-three/drei']
         },
         chunkFileNames: (chunkInfo) => {
-          const name = chunkInfo.facadeModuleId?.split('/').pop()?.replace(/\.\w+$/, '') || 'chunk';
-          return `js/${name}-[hash].js`;
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split('/').pop()?.replace(/\.\w+$/, '')
+            : 'chunk';
+          return `js/${facadeModuleId}-[hash].js`;
         },
         assetFileNames: (assetInfo) => {
-          const name = assetInfo.name || '';
-          if (/\.(png|jpe?g|gif|svg|webp|avif)$/i.test(name)) {
+          const info = assetInfo.name?.split('.') || [];
+          const ext = info[info.length - 1];
+          if (/\.(png|jpe?g|gif|svg|webp|avif)$/i.test(assetInfo.name || '')) {
             return 'images/[name]-[hash][extname]';
           }
-          if (/\.(woff2?|eot|ttf|otf)$/i.test(name)) {
+          if (/\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name || '')) {
             return 'fonts/[name]-[hash][extname]';
           }
-          return 'assets/[name]-[hash][extname]';
+          return `assets/[name]-[hash].${ext}`;
         }
       },
-      external: (id) =>
-        id.includes('MetaMask') ||
-        id.includes('phantom') ||
-        id.includes('keplr') ||
-        id.includes('wallet')
+      external: (id) => {
+        return id.includes('MetaMask') || 
+               id.includes('phantom') || 
+               id.includes('keplr') ||
+               id.includes('wallet');
+      }
     }
   },
   css: {
@@ -87,9 +83,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
       'framer-motion',
       'react-error-boundary'
     ],
