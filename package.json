@@ -1,7 +1,7 @@
 {
   "name": "wishantbhajan",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "homepage": "https://Wishant010.github.io/wishantbhajan",
   "scripts": {
@@ -81,7 +81,7 @@
     "three.js",
     "framer-motion"
   ],
-  "author": "Digital Reality Lab",
+  "author": "Wishant Bhajan",
   "license": "MIT",
   "description": "High-performance web application for wishantbhajan.nl using React, Three.js, and modern deployment."
 }
