@@ -1,4 +1,4 @@
-import { MotionValue, useTransform, useSpring } from 'framer-motion';
+import { useTransform, useSpring } from 'framer-motion';
 
 // Animation utility functions to fix blur and performance issues
 
@@ -7,7 +7,7 @@ import { MotionValue, useTransform, useSpring } from 'framer-motion';
  * Converts negative blur values to positive and adds creative effects
  */
 export function useFixedBlurAnimation(
-  source: MotionValue<number>,
+  source: any,
   options: {
     intensity?: number;
     maxBlur?: number;
@@ -27,7 +27,7 @@ export function useFixedBlurAnimation(
   } = options;
 
   // Transform negative values to positive with intensity scaling
-  const blurValue = useTransform(source, (value) => {
+  const blurValue = useTransform(source, (value: number) => {
     const absoluteValue = Math.abs(value);
     const scaledValue = absoluteValue * intensity;
     return Math.min(Math.max(scaledValue, minBlur), maxBlur);
@@ -37,7 +37,7 @@ export function useFixedBlurAnimation(
   const springBlur = useSpring(blurValue, springConfig);
 
   // Return filter string with guaranteed positive values
-  const blurFilter = useTransform(springBlur, (blur) => `blur(${blur}px)`);
+  const blurFilter = useTransform(springBlur, (blur: number) => `blur(${blur}px)`);
   
   return {
     blur: springBlur,
