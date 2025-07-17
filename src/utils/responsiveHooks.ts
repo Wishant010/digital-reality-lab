@@ -1,531 +1,449 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useViewport, type BreakpointKey } from './responsive';
 
 // ========================================
-// ADVANCED RESPONSIVE HOOKS
+// OPTIMIZED RESPONSIVE SYSTEM WITH MULTI-MONITOR SUPPORT
 // ========================================
 
-/**
- * Hook for element-based responsive behavior using ResizeObserver
- */
-export function useElementSize<T extends HTMLElement = HTMLDivElement>() {
-  const [size, setSize] = useState({ width: 0, height: 0 });
-  const elementRef = useRef<T>(null);
-  const resizeObserver = useRef<ResizeObserver | null>(null);
+// Enhanced breakpoint system
+export const BREAKPOINTS = {
+  xs: 320,   // Small mobile
+  sm: 640,   // Large mobile / small tablet
+  md: 768,   // Tablet
+  lg: 1024,  // Small desktop
+  xl: 1280,  // Desktop
+  '2xl': 1536, // Large desktop
+  '3xl': 1920, // Wide desktop
+  '4xl': 2560, // Ultra-wide
+} as const;
 
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
+export type DeviceCategory = 'mobile' | 'tablet' | 'desktop' | 'ultrawide';
+export type BreakpointKey = keyof typeof BREAKPOINTS;
+export type OrientationType = 'portrait' | 'landscape';
 
-    resizeObserver.current = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setSize({ width, height });
+export interface DeviceInfo {
+  category: DeviceCategory;
+  breakpoint: BreakpointKey;
+  width: number;
+  height: number;
+  orientation: OrientationType;
+  pixelRatio: number;
+  isTouch: boolean;
+  isRetina: boolean;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+  hasHover: boolean;
+  prefersReducedMotion: boolean;
+  colorScheme: 'light' | 'dark';
+  canHover: boolean;
+  pointerAccuracy: 'coarse' | 'fine';
+}
+
+export type ResponsiveValue<T> = T | Partial<Record<BreakpointKey, T>>;
+
+// ========================================
+// DEBOUNCED RESIZE MANAGER
+// ========================================
+
+class ResizeManager {
+  private static instance: ResizeManager | null = null;
+  private listeners: Set<() => void> = new Set();
+  private debounceTimer: NodeJS.Timeout | null = null;
+  private rafId: number | null = null;
+  private isResizing: boolean = false;
+  private lastWidth: number = 0;
+  private lastHeight: number = 0;
+
+  static getInstance(): ResizeManager {
+    if (!ResizeManager.instance) {
+      ResizeManager.instance = new ResizeManager();
+    }
+    return ResizeManager.instance;
+  }
+
+  private constructor() {
+    if (typeof window !== 'undefined') {
+      this.lastWidth = window.innerWidth;
+      this.lastHeight = window.innerHeight;
+      this.setupEventListeners();
+    }
+  }
+
+  private setupEventListeners() {
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const currentHeight = window.innerHeight;
+
+      // Only process if dimensions actually changed
+      if (currentWidth === this.lastWidth && currentHeight === this.lastHeight) {
+        return;
+      }
+
+      this.lastWidth = currentWidth;
+      this.lastHeight = currentHeight;
+      this.isResizing = true;
+
+      // Cancel existing timers
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+      }
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+      }
+
+      // Immediate update for responsive feedback
+      this.rafId = requestAnimationFrame(() => {
+        this.notifyListeners();
+      });
+
+      // Debounced update for final state
+      this.debounceTimer = setTimeout(() => {
+        this.isResizing = false;
+        this.notifyListeners();
+      }, 150); // 150ms debounce for multi-monitor stability
+    };
+
+    // Use passive listeners for better performance
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('orientationchange', handleResize, { passive: true });
+
+    // Handle visibility changes (important for multi-monitor setups)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        // Re-check dimensions when tab becomes visible
+        setTimeout(handleResize, 50);
       }
     });
+  }
 
-    resizeObserver.current.observe(element);
+  private notifyListeners() {
+    this.listeners.forEach(listener => {
+      try {
+        listener();
+      } catch (error) {
+        console.warn('Error in resize listener:', error);
+      }
+    });
+  }
+
+  addListener(listener: () => void): () => void {
+    this.listeners.add(listener);
+    
+    // Return cleanup function
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  getResizeState() {
+    return {
+      isResizing: this.isResizing,
+      width: this.lastWidth,
+      height: this.lastHeight,
+    };
+  }
+
+  cleanup() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+    }
+    this.listeners.clear();
+  }
+}
+
+// ========================================
+// OPTIMIZED MEDIA QUERY HOOK
+// ========================================
+
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+  const mediaQueryRef = useRef<MediaQueryList | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const mediaQuery = window.matchMedia(query);
+      mediaQueryRef.current = mediaQuery;
+      
+      setMatches(mediaQuery.matches);
+
+      const handler = (event: MediaQueryListEvent) => {
+        setMatches(event.matches);
+      };
+
+      // Use modern API with fallback
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handler);
+        cleanupRef.current = () => mediaQuery.removeEventListener('change', handler);
+      } else {
+        // Legacy support
+        mediaQuery.addListener(handler);
+        cleanupRef.current = () => mediaQuery.removeListener(handler);
+      }
+    } catch (error) {
+      console.warn(`Invalid media query: ${query}`, error);
+    }
 
     return () => {
-      if (resizeObserver.current) {
-        resizeObserver.current.disconnect();
-      }
+      cleanupRef.current?.();
+    };
+  }, [query]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupRef.current?.();
     };
   }, []);
 
-  return { ref: elementRef, size };
+  return matches;
 }
 
-/**
- * Hook for container-based responsive queries
- */
-export function useContainerQuery(containerRef: React.RefObject<HTMLElement>) {
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
+// ========================================
+// OPTIMIZED VIEWPORT HOOK
+// ========================================
+
+export function useViewport(): DeviceInfo {
+  const [viewport, setViewport] = useState<DeviceInfo>(() => {
+    if (typeof window === 'undefined') {
+      return createSSRDeviceInfo();
+    }
+    return createDeviceInfo(window.innerWidth, window.innerHeight);
+  });
+
+  const isMountedRef = useRef(true);
+  const resizeManager = useRef<ResizeManager | null>(null);
+
+  const updateViewport = useCallback(() => {
+    if (!isMountedRef.current || typeof window === 'undefined') return;
+    
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    const newViewport = createDeviceInfo(width, height);
+    
+    setViewport(prev => {
+      // Only update if something actually changed
+      if (
+        prev.width === newViewport.width &&
+        prev.height === newViewport.height &&
+        prev.breakpoint === newViewport.breakpoint &&
+        prev.orientation === newViewport.orientation
+      ) {
+        return prev;
+      }
+      return newViewport;
+    });
+  }, []);
 
   useEffect(() => {
-    const element = containerRef.current;
-    if (!element) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setContainerWidth(width);
-        setContainerHeight(height);
-      }
-    });
-
-    resizeObserver.observe(element);
+    isMountedRef.current = true;
     
-    // Initial measurement
-    const rect = element.getBoundingClientRect();
-    setContainerWidth(rect.width);
-    setContainerHeight(rect.height);
+    if (typeof window === 'undefined') return;
 
-    return () => resizeObserver.disconnect();
-  }, [containerRef]);
+    // Get resize manager instance
+    resizeManager.current = ResizeManager.getInstance();
+    
+    // Subscribe to resize events
+    const cleanup = resizeManager.current.addListener(updateViewport);
 
-  const containerBreakpoint = useMemo(() => {
-    if (containerWidth >= 1280) return 'xl';
-    if (containerWidth >= 1024) return 'lg';
-    if (containerWidth >= 768) return 'md';
-    if (containerWidth >= 640) return 'sm';
-    return 'xs';
-  }, [containerWidth]);
+    // Initial update
+    updateViewport();
 
-  return {
-    containerWidth,
-    containerHeight,
-    containerBreakpoint,
-    isContainerSmall: containerWidth < 640,
-    isContainerMedium: containerWidth >= 640 && containerWidth < 1024,
-    isContainerLarge: containerWidth >= 1024,
-  };
+    return () => {
+      isMountedRef.current = false;
+      cleanup();
+    };
+  }, [updateViewport]);
+
+  return viewport;
 }
 
-/**
- * Hook for responsive image loading
- */
-export function useResponsiveImage(
-  sources: Record<BreakpointKey, string>,
-  options?: {
-    lazy?: boolean;
-    quality?: number;
-    placeholder?: string;
-  }
-) {
+// ========================================
+// OPTIMIZED RESPONSIVE VALUE HOOK
+// ========================================
+
+export function useResponsiveValue<T>(value: ResponsiveValue<T>): T {
   const { breakpoint } = useViewport();
-  const [currentSrc, setCurrentSrc] = useState<string>('');
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  
+  return useMemo(() => {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      return value as T;
+    }
 
-  const { lazy = true, quality = 80, placeholder } = options || {};
-
-  // Determine best source for current breakpoint
-  const targetSrc = useMemo(() => {
+    const responsiveValue = value as Partial<Record<BreakpointKey, T>>;
     const breakpoints: BreakpointKey[] = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'];
     const currentIndex = breakpoints.indexOf(breakpoint);
-    
-    // Find best available source (mobile-first)
+
+    // Find the closest defined value (mobile-first approach)
     for (let i = currentIndex; i >= 0; i--) {
       const bp = breakpoints[i];
-      if (sources[bp]) {
-        const url = sources[bp];
-        return quality < 100 ? `${url}?q=${quality}` : url;
+      if (responsiveValue[bp] !== undefined) {
+        return responsiveValue[bp] as T;
       }
     }
-    
-    // Fallback to first available source
+
+    // Fallback to first available value
     for (const bp of breakpoints) {
-      if (sources[bp]) {
-        const url = sources[bp];
-        return quality < 100 ? `${url}?q=${quality}` : url;
+      if (responsiveValue[bp] !== undefined) {
+        return responsiveValue[bp] as T;
       }
     }
-    
-    return placeholder || '';
-  }, [breakpoint, sources, quality, placeholder]);
 
-  // Load image when target source changes
-  useEffect(() => {
-    if (!targetSrc || targetSrc === currentSrc) return;
+    return undefined as T;
+  }, [value, breakpoint]);
+}
 
-    setIsLoading(true);
-    setError(null);
+// ========================================
+// OPTIMIZED FEATURE DETECTION HOOKS
+// ========================================
 
-    const img = new Image();
-    let observer: IntersectionObserver | null = null;
-    let tempElement: HTMLDivElement | null = null;
+export function useBreakpoint(bp: BreakpointKey): boolean {
+  return useMediaQuery(`(min-width: ${BREAKPOINTS[bp]}px)`);
+}
 
-    img.onload = () => {
-      setCurrentSrc(targetSrc);
-      setIsLoaded(true);
-      setIsLoading(false);
-    };
-    img.onerror = () => {
-      setError('Failed to load image');
-      setIsLoading(false);
-    };
+export function useOrientation(): OrientationType {
+  const isLandscape = useMediaQuery('(orientation: landscape)');
+  return isLandscape ? 'landscape' : 'portrait';
+}
 
-    if (lazy) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) {
-            img.src = targetSrc;
-            observer!.disconnect();
-          }
-        },
-        { threshold: 0.1 }
-      );
-      tempElement = document.createElement('div');
-      observer.observe(tempElement);
-    } else {
-      img.src = targetSrc;
-    }
+export function useTouch(): boolean {
+  return useMediaQuery('(pointer: coarse)');
+}
 
-    return () => {
-      if (observer) observer.disconnect();
-      tempElement = null;
-    };
-  }, [targetSrc, currentSrc, lazy]);
+export function useHover(): boolean {
+  return useMediaQuery('(hover: hover) and (pointer: fine)');
+}
 
+export function usePrefersReducedMotion(): boolean {
+  return useMediaQuery('(prefers-reduced-motion: reduce)');
+}
+
+export function usePrefersDarkMode(): boolean {
+  return useMediaQuery('(prefers-color-scheme: dark)');
+}
+
+// ========================================
+// UTILITY FUNCTIONS
+// ========================================
+
+function createSSRDeviceInfo(): DeviceInfo {
   return {
-    src: currentSrc || placeholder || '',
-    isLoaded,
-    isLoading,
-    error,
-    targetSrc,
+    category: 'desktop',
+    breakpoint: 'lg',
+    width: 1024,
+    height: 768,
+    orientation: 'landscape',
+    pixelRatio: 1,
+    isTouch: false,
+    isRetina: false,
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true,
+    hasHover: true,
+    prefersReducedMotion: false,
+    colorScheme: 'dark',
+    canHover: true,
+    pointerAccuracy: 'fine',
   };
 }
 
-/**
- * Hook for responsive font loading
- */
-export function useResponsiveFonts() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const { breakpoint } = useViewport();
-
-  useEffect(() => {
-    if (!('fonts' in document)) {
-      setFontsLoaded(true);
-      return;
-    }
-
-    const loadFonts = async () => {
-      try {
-        // Load different font weights based on screen size
-        const fontsToLoad = [
-          'Inter 400',
-          'Inter 500',
-          'Inter 600',
-        ];
-
-        // Add more weights for larger screens
-        if (breakpoint === 'lg' || breakpoint === 'xl' || breakpoint === '2xl') {
-          fontsToLoad.push('Inter 700', 'Inter 800');
-        }
-
-        await Promise.all(
-          fontsToLoad.map(font => document.fonts.load(font))
-        );
-
-        setFontsLoaded(true);
-      } catch (error) {
-        console.warn('Font loading failed:', error);
-        setFontsLoaded(true);
-      }
-    };
-
-    loadFonts();
-  }, [breakpoint]);
-
-  return fontsLoaded;
-}
-
-/**
- * Hook for responsive performance monitoring
- */
-export function useResponsivePerformance() {
-  const { isMobile, prefersReducedMotion } = useViewport();
-  const [performance, setPerformance] = useState({
-    fps: 60,
-    memoryUsage: 0,
-    networkSpeed: 'unknown' as 'slow' | 'fast' | 'unknown',
-  });
-
-  useEffect(() => {
-    let frameCount = 0;
-    let lastTime = 0;
-    let animationId: number;
-
-    const measureFPS = (currentTime: number) => {
-      frameCount++;
-      
-      if (currentTime - lastTime >= 1000) {
-        const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
-        setPerformance(prev => ({ ...prev, fps }));
-        frameCount = 0;
-        lastTime = currentTime;
-      }
-      
-      animationId = requestAnimationFrame(measureFPS);
-    };
-
-    // Start FPS monitoring only if animations are enabled
-    if (!prefersReducedMotion) {
-      animationId = requestAnimationFrame(measureFPS);
-    }
-
-    // Monitor memory usage
-    const checkMemory = () => {
-      if ('memory' in performance) {
-        const memory = (performance as any).memory;
-        setPerformance(prev => ({
-          ...prev,
-          memoryUsage: memory.usedJSHeapSize / memory.jsHeapSizeLimit
-        }));
-      }
-    };
-
-    // Monitor network speed
-    const checkNetworkSpeed = () => {
-      if ('connection' in navigator) {
-        const connection = (navigator as any).connection;
-        const speed = connection.effectiveType === '4g' || connection.effectiveType === '3g' 
-          ? 'fast' 
-          : 'slow';
-        setPerformance(prev => ({ ...prev, networkSpeed: speed }));
-      }
-    };
-
-    checkMemory();
-    checkNetworkSpeed();
-
-    const memoryInterval = setInterval(checkMemory, 5000);
-    const networkInterval = setInterval(checkNetworkSpeed, 10000);
-
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-      clearInterval(memoryInterval);
-      clearInterval(networkInterval);
-    };
-  }, [prefersReducedMotion]);
-
-  // Performance recommendations
-  const recommendations = useMemo(() => {
-    const suggestions: string[] = [];
-    
-    if (performance.fps < 30) {
-      suggestions.push('Consider reducing animation complexity');
-    }
-    
-    if (performance.memoryUsage > 0.8) {
-      suggestions.push('High memory usage detected - consider optimizing components');
-    }
-    
-    if (performance.networkSpeed === 'slow') {
-      suggestions.push('Slow network detected - consider reducing asset sizes');
-    }
-    
-    if (isMobile && performance.fps < 45) {
-      suggestions.push('Consider mobile-specific optimizations');
-    }
-    
-    return suggestions;
-  }, [performance, isMobile]);
-
-  return {
-    performance,
-    recommendations,
-    shouldOptimize: performance.fps < 45 || performance.memoryUsage > 0.7 || performance.networkSpeed === 'slow',
-  };
-}
-
-/**
- * Hook for responsive scroll behavior
- */
-export function useResponsiveScroll() {
-  const [scrollInfo, setScrollInfo] = useState({
-    x: 0,
-    y: 0,
-    direction: 'down' as 'up' | 'down' | 'left' | 'right',
-    isScrolling: false,
-    progress: 0,
-  });
+function createDeviceInfo(width: number, height: number): DeviceInfo {
+  // Safe feature detection with fallbacks
+  const pixelRatio = typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1;
+  const orientation: OrientationType = width > height ? 'landscape' : 'portrait';
   
-  const { isMobile } = useViewport();
-  const lastScrollY = useRef(0);
-  const scrollTimer = useRef<NodeJS.Timeout | null>(null);
+  const breakpoint = getBreakpointFromWidth(width);
+  const category = getDeviceCategory(width);
+  
+  // Safe feature detection
+  let isTouch = false;
+  let hasHover = true;
+  let prefersReducedMotion = false;
+  let colorScheme: 'light' | 'dark' = 'dark';
+  let canHover = true;
+  let pointerAccuracy: 'coarse' | 'fine' = 'fine';
 
-  const handleScroll = useCallback(() => {
-    const x = window.scrollX;
-    const y = window.scrollY;
-    const progress = y / (document.documentElement.scrollHeight - window.innerHeight);
-    
-    const direction = y > lastScrollY.current ? 'down' : 'up';
-    lastScrollY.current = y;
-
-    setScrollInfo({
-      x,
-      y,
-      direction,
-      isScrolling: true,
-      progress: Math.max(0, Math.min(1, progress)),
-    });
-
-    // Clear existing timer
-    if (scrollTimer.current) {
-      clearTimeout(scrollTimer.current);
+  if (typeof window !== 'undefined') {
+    try {
+      isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      hasHover = window.matchMedia('(hover: hover)').matches;
+      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      colorScheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      pointerAccuracy = window.matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine';
+    } catch (error) {
+      console.warn('Feature detection failed:', error);
     }
-
-    // Set scroll end timer
-    scrollTimer.current = setTimeout(() => {
-      setScrollInfo(prev => ({ ...prev, isScrolling: false }));
-    }, isMobile ? 150 : 100);
-  }, [isMobile]);
-
-  useEffect(() => {
-    const throttledHandleScroll = throttle(handleScroll, isMobile ? 16 : 8);
-    
-    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
-      if (scrollTimer.current) {
-        clearTimeout(scrollTimer.current);
-      }
-    };
-  }, [handleScroll, isMobile]);
-
-  return scrollInfo;
-}
-
-/**
- * Hook for responsive intersection observer
- */
-export function useResponsiveIntersection(
-  options?: IntersectionObserverInit & {
-    triggerOnce?: boolean;
-    rootMargin?: string;
   }
-) {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [hasIntersected, setHasIntersected] = useState(false);
-  const elementRef = useRef<HTMLElement>(null);
-  const { isMobile } = useViewport();
-
-  const { triggerOnce = false, rootMargin, ...observerOptions } = options || {};
-
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const isVisible = entry.isIntersecting;
-        setIsIntersecting(isVisible);
-        
-        if (isVisible && !hasIntersected) {
-          setHasIntersected(true);
-        }
-        
-        if (triggerOnce && isVisible) {
-          observer.disconnect();
-        }
-      },
-      {
-        // Adjust threshold for mobile devices
-        threshold: isMobile ? 0.1 : 0.3,
-        rootMargin: rootMargin || (isMobile ? '50px' : '100px'),
-        ...observerOptions,
-      }
-    );
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [isMobile, triggerOnce, hasIntersected, rootMargin, observerOptions]);
 
   return {
-    ref: elementRef,
-    isIntersecting,
-    hasIntersected,
+    category,
+    breakpoint,
+    width,
+    height,
+    orientation,
+    pixelRatio,
+    isTouch,
+    isRetina: pixelRatio >= 2,
+    isMobile: category === 'mobile',
+    isTablet: category === 'tablet',
+    isDesktop: category === 'desktop' || category === 'ultrawide',
+    hasHover,
+    prefersReducedMotion,
+    colorScheme,
+    canHover,
+    pointerAccuracy,
   };
 }
 
-/**
- * Hook for responsive keyboard navigation
- */
-export function useResponsiveKeyboard() {
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [isKeyboardUser, setIsKeyboardUser] = useState(false);
-  const { isTouch } = useViewport();
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
-        setIsKeyboardUser(true);
-      }
-    };
-
-    const handleMouseDown = () => {
-      setIsKeyboardUser(false);
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('mousedown', handleMouseDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, []);
-
-  const handleKeyNavigation = useCallback((
-    e: React.KeyboardEvent,
-    itemCount: number,
-    onSelect?: (index: number) => void
-  ) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setFocusedIndex(prev => (prev + 1) % itemCount);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setFocusedIndex(prev => (prev - 1 + itemCount) % itemCount);
-        break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        if (focusedIndex >= 0 && onSelect) {
-          onSelect(focusedIndex);
-        }
-        break;
-      case 'Escape':
-        setFocusedIndex(-1);
-        break;
+function getBreakpointFromWidth(width: number): BreakpointKey {
+  const breakpoints = Object.entries(BREAKPOINTS).reverse() as [BreakpointKey, number][];
+  
+  for (const [key, value] of breakpoints) {
+    if (width >= value) {
+      return key;
     }
-  }, [focusedIndex]);
-
-  return {
-    focusedIndex,
-    isKeyboardUser: isKeyboardUser && !isTouch,
-    handleKeyNavigation,
-    setFocusedIndex,
-  };
+  }
+  
+  return 'xs';
 }
 
-// Utility function for throttling
-function throttle<T extends (...args: any[]) => void>(fn: T, wait: number): T {
-  let last = 0;
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  return function(this: any, ...args: any[]) {
-    const now = Date.now();
-    if (now - last >= wait) {
-      last = now;
-      fn.apply(this, args);
-    } else if (!timeout) {
-      timeout = setTimeout(() => {
-        last = Date.now();
-        timeout = null;
-        fn.apply(this, args);
-      }, wait - (now - last));
-    }
-  } as T;
+function getDeviceCategory(width: number): DeviceCategory {
+  if (width >= BREAKPOINTS['3xl']) return 'ultrawide';
+  if (width >= BREAKPOINTS.lg) return 'desktop';
+  if (width >= BREAKPOINTS.sm) return 'tablet';
+  return 'mobile';
 }
 
-// Export all hooks
+// ========================================
+// CLEANUP UTILITY
+// ========================================
+
+export function cleanupResponsiveSystem() {
+  const manager = ResizeManager.getInstance();
+  manager.cleanup();
+}
+
+// ========================================
+// EXPORT ALL
+// ========================================
+
 export default {
-  useElementSize,
-  useContainerQuery,
-  useResponsiveImage,
-  useResponsiveFonts,
-  useResponsivePerformance,
-  useResponsiveScroll,
-  useResponsiveIntersection,
-  useResponsiveKeyboard,
+  BREAKPOINTS,
+  useMediaQuery,
+  useViewport,
+  useResponsiveValue,
+  useBreakpoint,
+  useOrientation,
+  useTouch,
+  useHover,
+  usePrefersReducedMotion,
+  usePrefersDarkMode,
+  cleanupResponsiveSystem,
 };
