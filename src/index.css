@@ -55,10 +55,18 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  scrollbar-width: thin;
-  scrollbar-color: #10b981 #1a1a1a;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+}
+
+/* Hide scrollbar completely for all browsers */
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 html {
@@ -72,6 +80,13 @@ html {
   color-scheme: dark;
   background-color: #0a0a0a !important;
   overflow-x: hidden;
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -99,6 +114,13 @@ body {
   perspective: 1000px;
   /* Prevent browser extension style injection */
   isolation: isolate;
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
 }
 
 /* Root container optimization */
@@ -108,32 +130,57 @@ body {
   /* Create stacking context to prevent extension interference */
   position: relative;
   z-index: 1;
+  /* Hide scrollbar */
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Enhanced scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
+#root::-webkit-scrollbar {
+  display: none;
 }
 
-@media (min-width: 1024px) {
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
+/* Main page containers - hide scrollbars */
+.page-container {
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
-  border-radius: 4px;
+.page-container::-webkit-scrollbar {
+  display: none;
 }
 
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #10b981 0%, #047857 100%);
-  border-radius: 4px;
-  transition: background 0.3s ease;
+/* Allow scrolling for Page2 while keeping scrollbars hidden */
+.page-container.page2-container {
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+/* Completely hide all scrollbars */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  background: transparent;
+}
+
+/* Allow scrolling while keeping scrollbars hidden */
+.scrollable-hidden {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollable-hidden::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  background: transparent;
 }
 
 /* Enable text selection for content areas */
