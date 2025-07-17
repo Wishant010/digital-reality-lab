@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import NavbarMenu from '../components/NavbarMenu';
-import ContentSection from '../components/ContentSection';
+import ContentSection from './ContentSection';
 import SmoothText from '../Type-manieren/SmoothText';
 import { FloatingOrbs } from '../Vormen/CombinedVisualComponents';
 
@@ -194,7 +194,10 @@ const HackedPage = ({ isVisible }: HackedPageProps): React.ReactElement | null =
         </motion.div>
       </motion.div>
 
-      <ContentSection isVisible={showContent} />
+      <ContentSection title="">
+        {/* Content goes here. Example: */}
+        {showContent && <div>Visible content</div>}
+      </ContentSection>
     </div>
   );
 };
