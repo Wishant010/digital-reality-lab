@@ -26,23 +26,64 @@ export function useFixedBlurAnimation(
     springConfig = { stiffness: 400, damping: 40, mass: 1 }
   } = options;
 
-  // Transform negative values to positive with intensity scaling
-  const blurValue = useTransform(source, (value: number) => {
-    const absoluteValue = Math.abs(value);
-    const scaledValue = absoluteValue * intensity;
-    return Math.min(Math.max(scaledValue, minBlur), maxBlur);
+  // Protect against undefined source
+  if (!source) {
+    console.warn('useFixedBlurAnimation: source is undefined');
+    return {
+      blur: 0,
+      filter: 'blur(0px)',
+      style: { filter: 'blur(0px)' }
+    };
+  }
+
+  // First clamp the source value, then transform to prevent negative blur
+  const clampedSource = useTransform(source, (value: number) => {
+    // Handle non-numeric or NaN values
+    if (typeof value !== 'number' || isNaN(value)) return 0;
+    return Math.max(0, Math.abs(value)); // Use absolute value to handle negative inputs
+  });
+  
+  const blurValue = useTransform(clampedSource, (value: number) => {
+    const scaledValue = value * intensity;
+    // Apply easing for smoother transitions
+    const easedValue = Math.pow(scaledValue, 0.8); // Subtle easing
+    // Ensure blur value is always non-negative and within bounds
+    return Math.min(Math.max(Math.abs(easedValue), minBlur), maxBlur);
   });
 
-  // Apply spring animation for smoother motion
-  const springBlur = useSpring(blurValue, springConfig);
+  // Get performance level to adjust animation quality
+  const { performanceLevel } = useAdaptiveAnimations();
+  
+  // Adjust spring config based on performance
+  const adaptiveSpringConfig = {
+    ...springConfig,
+    // Reduce animation complexity on low-end devices
+    stiffness: performanceLevel === 'low' ? 
+      (springConfig.stiffness ?? 400) * 0.8 : 
+      (springConfig.stiffness ?? 400),
+    damping: performanceLevel === 'low' ? 
+      (springConfig.damping ?? 40) * 1.2 : 
+      (springConfig.damping ?? 40)
+  };
 
-  // Return filter string with guaranteed positive values
-  const blurFilter = useTransform(springBlur, (blur: number) => `blur(${blur}px)`);
+  // Apply spring animation for smoother motion
+  const springBlur = useSpring(blurValue, adaptiveSpringConfig);
+
+  // Return filter string with guaranteed positive values and performance optimization
+  const blurFilter = useTransform(springBlur, (blur: number) => {
+    // Round blur values for better performance
+    const roundedBlur = Math.round(blur * 10) / 10;
+    return `blur(${roundedBlur}px)${performanceLevel === 'low' ? ' translateZ(0)' : ''}`;
+  });
   
   return {
     blur: springBlur,
     filter: blurFilter,
-    style: { filter: blurFilter }
+    style: { 
+      filter: blurFilter,
+      willChange: 'filter',
+      backfaceVisibility: 'hidden'
+    }
   };
 }
 
@@ -256,20 +297,38 @@ export function useAdaptiveAnimations() {
 export function safeguardAnimations() {
   // Prevent wallet extensions from interfering with animations
   if (typeof window !== 'undefined') {
-    const originalRAF = window.requestAnimationFrame;
-    
-    window.requestAnimationFrame = function(callback) {
-      try {
-        return originalRAF.call(window, callback);
-      } catch (error) {
-        console.warn('Animation frame request failed:', error as Error);
-        return setTimeout(callback, 16) as any;
-      }
-    };
+    // Avoid double-patching
+    if (!(window.requestAnimationFrame as any)._safeguarded) {
+      const originalRAF = window.requestAnimationFrame;
+      const patchedRAF = function(callback: FrameRequestCallback): number {
+        try {
+          return originalRAF.call(window, callback);
+        } catch (error) {
+          console.warn('Animation frame request failed:', error);
+          // Fallback to setTimeout, but ensure callback is called with timestamp
+          return window.setTimeout(() => callback(performance.now()), 16) as any;
+        }
+      };
+      (patchedRAF as any)._safeguarded = true;
+      window.requestAnimationFrame = patchedRAF;
+    }
   }
 }
 
 // Initialize safeguards
 if (typeof window !== 'undefined') {
   safeguardAnimations();
+}
+
+/**
+ * Ensures a blur value is safe to use in CSS filters
+ * @param value The blur value to sanitize
+ * @param defaultValue Optional default value if the input is invalid
+ * @returns A safe, non-negative blur value
+ */
+export function getSafeBlurValue(value: number, defaultValue: number = 0): number {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return Math.max(0, defaultValue);
+  }
+  return Math.max(0, Math.abs(value));
 }

@@ -59,7 +59,7 @@ const SmoothText = ({
           initial={{ 
             opacity: 0, 
             y: 80, 
-            filter: "blur(12px)",
+            filter: "blur(5px)",
             scale: 0.6,
             rotateX: 45
           }}

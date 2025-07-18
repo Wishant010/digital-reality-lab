@@ -301,7 +301,7 @@ const NavbarMenu = ({ isVisible }: NavbarMenuProps) => {
       
       <motion.header
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/80 border-b border-emerald-500/20"
-        initial={{ y: -120, opacity: 0, filter: "blur(10px)" }}
+        initial={{ y: -120, opacity: 0, filter: "blur(5px)" }}
         animate={{ 
           y: isVisible ? 0 : -120,
           opacity: isVisible ? 1 : 0,

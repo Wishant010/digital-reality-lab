@@ -115,7 +115,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
             opacity: 0,
             y: prefersReducedMotion ? 0 : 50,
             scale: prefersReducedMotion ? 1 : 0.3,
-            filter: prefersReducedMotion ? "blur(0px)" : "blur(10px)",
+            filter: "blur(5px)", // Start with a positive blur value
             rotateX: prefersReducedMotion ? 0 : -90,
           }}
           animate={
@@ -431,7 +431,7 @@ const HomePage: React.FC = () => {
             className="min-h-screen relative overflow-hidden z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            exit={{ opacity: 0, scale: 0.9, filter: "blur(5px)" }}
             transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
           >
             {/* Background Elements */}

@@ -6,7 +6,7 @@ import './index.css';
 // Import performance utilities
 import { safeguardAnimations } from './utils/animationUtils';
 
-// Performance and security optimizations
+// Simplified and safe app initialization
 const initializeApp = () => {
   // Apply animation safeguards immediately
   safeguardAnimations();
@@ -17,35 +17,33 @@ const initializeApp = () => {
     console.warn = () => {};
     console.info = () => {};
     console.debug = () => {};
+    console.error = () => {}; // Also disable error in production
   }
 
-  // Performance monitoring
-  if ('performance' in window && 'measure' in performance) {
+  // Performance monitoring (only in development)
+  if (import.meta.env.DEV && 'performance' in window && 'measure' in performance) {
     performance.mark('app-start');
   }
 
-  // Prevent wallet extension conflicts
+  // Simplified extension conflict prevention
   const preventExtensionConflicts = () => {
-    // Block common extension globals that cause conflicts
+    // Only block if not already defined
     const blockedGlobals = [
-      'ethereum', 'web3', 'phantom', 'solana', 'keplr',
-      'MetaMask', 'Trust', 'Coinbase', 'BinanceChain'
+      'ethereum', 'web3', 'phantom', 'solana', 'keplr'
     ];
     
     blockedGlobals.forEach(global => {
       if (!(global in window)) {
-        Object.defineProperty(window, global, {
-          get: () => {
-            console.debug(`Blocked access to ${global}`);
-            return undefined;
-          },
-          set: () => {
-            console.debug(`Blocked injection of ${global}`);
-            return false;
-          },
-          configurable: false,
-          enumerable: false
-        });
+        try {
+          Object.defineProperty(window, global, {
+            get: () => undefined,
+            set: () => false,
+            configurable: false,
+            enumerable: false
+          });
+        } catch (e) {
+          // Silently fail if can't define property
+        }
       }
     });
   };
@@ -53,56 +51,41 @@ const initializeApp = () => {
   // Apply security measures
   preventExtensionConflicts();
 
-  // Error handling for extension-related errors
+  // Simplified error handling
   window.addEventListener('error', (event) => {
     const error = event.error as Error | undefined;
     if (error && error.stack) {
-      const errorMessage = error.message || '';
       const errorStack = error.stack || '';
       
-      // Check if error is from browser extension
+      // Only handle extension-related errors
       if (
         errorStack.includes('extension') ||
         errorStack.includes('chrome-extension') ||
-        errorStack.includes('moz-extension') ||
-        errorMessage.includes('MetaMask') ||
-        errorMessage.includes('phantom') ||
-        errorMessage.includes('keplr') ||
-        errorMessage.includes('ethereum')
+        errorStack.includes('moz-extension')
       ) {
-        console.debug('Caught and handled extension error:', errorMessage);
+        // Silently handle extension errors
         event.preventDefault();
         return false;
       }
     }
-    // Always return true or undefined to ensure all code paths return a value
     return true;
   });
 
-  // Handle CSP violations gracefully
-  window.addEventListener('securitypolicyviolation', (event) => {
-    console.debug('CSP Violation:', {
-      directive: event.violatedDirective,
-      blockedURI: event.blockedURI,
-      lineNumber: event.lineNumber,
-      sourceFile: event.sourceFile
-    });
-    
-    // Don't prevent default - let CSP handle it
-    // but log for debugging
-  });
-
-  // Optimize React rendering
+  // Handle CSP violations gracefully (only in development)
   if (import.meta.env.DEV) {
-    // Development optimizations
-    console.log('🚀 App starting in development mode');
+    window.addEventListener('securitypolicyviolation', (event) => {
+      console.debug('CSP Violation:', {
+        directive: event.violatedDirective,
+        blockedURI: event.blockedURI
+      });
+    });
   }
 };
 
 // Initialize optimizations
 initializeApp();
 
-// Create root and render with error boundary
+// Create root and render
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
@@ -118,7 +101,7 @@ root.render(
   </React.StrictMode>
 );
 
-// Performance measurement
+// Performance measurement (only in development)
 if (import.meta.env.DEV && 'performance' in window) {
   window.addEventListener('load', () => {
     setTimeout(() => {

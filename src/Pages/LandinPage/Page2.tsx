@@ -56,7 +56,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
             opacity: 0,
             y: 50,
             scale: 0.3,
-            filter: "blur(10px)",
+            filter: "blur(5px)",
             rotateX: -90,
           }}
           animate={
