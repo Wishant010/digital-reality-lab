@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(rm:*)",
+      "Bash(npm install)",
+      "Bash(npm run clean:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "Bash(ls:*)",
+      "Bash(npm rebuild:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "WebFetch(domain:wishantbhajan.nl)",
+      "Bash(node:*)",
+      "Bash(git add:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(npx gh-pages:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": []
+  }
+}

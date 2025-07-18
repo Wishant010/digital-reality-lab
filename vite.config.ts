@@ -1,11 +1,11 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from 'vite';
+import type { UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
-export default defineConfig({
-  base: '/wishantbhajan/', // ✅ Belangrijk voor GitHub Pages!
+const config = {
+  base: '/', // ✅ Voor custom domain wishantbhajan.nl
   plugins: [
     react({
       babel: {
@@ -138,4 +138,5 @@ export default defineConfig({
       }
     }
   }
-});
+};
+export default config;
