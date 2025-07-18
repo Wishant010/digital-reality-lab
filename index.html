@@ -38,14 +38,14 @@ window.$RefreshSig$ = () => (type) => type;</script>
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://digitalrealitylab.nl/">
+  <meta property="og:url" content="https://wishantbhajan.nl/">
   <meta property="og:title" content="Digital Reality Lab - Innovatieve Digitale Oplossingen">
   <meta property="og:description" content="Ontdek de toekomst van digitale technologie met onze innovatieve oplossingen en experimenten.">
   <meta property="og:image" content="/og-image.jpg">
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://digitalrealitylab.nl/">
+  <meta property="twitter:url" content="https://wishantbhajan.nl/">
   <meta property="twitter:title" content="Digital Reality Lab">
   <meta property="twitter:description" content="Innovatieve digitale oplossingen en experimenten">
   <meta property="twitter:image" content="/twitter-image.jpg">
@@ -68,9 +68,6 @@ window.$RefreshSig$ = () => (type) => type;</script>
       
       // Block wallet extension injection before they load
       const blockExtensionInjection = function() {
-        // Create sealed objects to prevent extension modification
-        const sealedWindow = Object.seal(window);
-        
         // Block common wallet globals
         const blockedGlobals = [
           'ethereum', 'web3', 'phantom', 'solana', 'keplr',
