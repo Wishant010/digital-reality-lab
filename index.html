@@ -1,8 +1,6 @@
 <!doctype html>
 <html lang="nl" class="scroll-smooth">
 <head>
-
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
@@ -12,19 +10,6 @@
   <link rel="dns-prefetch" href="//fonts.googleapis.com">
   <link rel="dns-prefetch" href="//fonts.gstatic.com">
   
-  <!-- Prevent extension conflicts -->
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval';
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com data:;
-    img-src 'self' data: blob: https:;
-    connect-src 'self' ws: wss:;
-    frame-src 'none';
-    object-src 'none';
-    base-uri 'self';
-  ">
-  
   <!-- SEO Meta Tags -->
   <title>Digital Reality Lab - Innovatieve Digitale Oplossingen</title>
   <meta name="description" content="Digital Reality Lab biedt cutting-edge digitale oplossingen met focus op performance, gebruikerservaring en innovatieve technologieën.">
@@ -33,163 +18,36 @@
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://digitalrealitylab.nl/">
+  <meta property="og:url" content="https://wishantbhajan.nl/">
   <meta property="og:title" content="Digital Reality Lab - Innovatieve Digitale Oplossingen">
   <meta property="og:description" content="Ontdek de toekomst van digitale technologie met onze innovatieve oplossingen en experimenten.">
   <meta property="og:image" content="/og-image.jpg">
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://digitalrealitylab.nl/">
+  <meta property="twitter:url" content="https://wishantbhajan.nl/">
   <meta property="twitter:title" content="Digital Reality Lab">
   <meta property="twitter:description" content="Innovatieve digitale oplossingen en experimenten">
   <meta property="twitter:image" content="/twitter-image.jpg">
   
   <!-- Favicons -->
-  <link rel="icon" type="image/png" href="/wishantbhajan/apple-touch-icon/favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="/wishantbhajan/apple-touch-icon/favicon.svg" />
-  <link rel="shortcut icon" href="/wishantbhajan/apple-touch-icon/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/wishantbhajan/apple-touch-icon/apple-touch-icon.png" />
-  <link rel="manifest" href="/wishantbhajan/apple-touch-icon/site.webmanifest" />
+  <link rel="icon" type="image/png" href="/apple-touch-icon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/apple-touch-icon/favicon.svg" />
+  <link rel="shortcut icon" href="/apple-touch-icon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
   
   <!-- Theme colors -->
   <meta name="theme-color" content="#10b981">
   <meta name="msapplication-TileColor" content="#10b981">
   
-  <!-- Prevent extension injection early -->
-  <script>
-    (function() {
-      'use strict';
-      
-      // Block wallet extension injection before they load
-      const blockExtensionInjection = function() {
-        // Create sealed objects to prevent extension modification
-        const sealedWindow = Object.seal(window);
-        
-        // Block common wallet globals
-        const blockedGlobals = [
-          'ethereum', 'web3', 'phantom', 'solana', 'keplr',
-          'MetaMask', 'Trust', 'Coinbase', 'BinanceChain'
-        ];
-        
-        blockedGlobals.forEach(function(global) {
-          try {
-            Object.defineProperty(window, global, {
-              get: function() {
-                console.debug('Blocked extension access to:', global);
-                return undefined;
-              },
-              set: function() {
-                console.debug('Blocked extension injection of:', global);
-                return false;
-              },
-              configurable: false,
-              enumerable: false
-            });
-          } catch (e) {
-            // Property might already be defined, ignore
-          }
-        });
-        
-        // Override common extension detection methods
-        const originalAddEventListener = window.addEventListener;
-        window.addEventListener = function(type, listener, options) {
-          // Block extension-related events
-          if (type && typeof type === 'string' && 
-              (type.includes('ethereum') || type.includes('wallet') || type.includes('solana'))) {
-            console.debug('Blocked extension event listener:', type);
-            return;
-          }
-          return originalAddEventListener.call(this, type, listener, options);
-        };
-      };
-      
-      // Performance optimization: reduce extension interference
-      const optimizePerformance = function() {
-        // Disable extension-prone features during development
-        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-          // Block common extension content script patterns
-          const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-              mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1 && node.tagName) {
-                  const element = node;
-                  // Remove extension-injected elements
-                  if (element.id && (
-                    element.id.includes('metamask') ||
-                    element.id.includes('phantom') ||
-                    element.id.includes('keplr') ||
-                    element.id.includes('wallet')
-                  )) {
-                    console.debug('Removed extension element:', element.id);
-                    element.remove();
-                  }
-                }
-              });
-            });
-          });
-          
-          observer.observe(document.documentElement, {
-            childList: true,
-            subtree: true
-          });
-        }
-      };
-      
-      // Apply optimizations immediately
-      blockExtensionInjection();
-      optimizePerformance();
-      
-      // Re-apply on DOM ready
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          blockExtensionInjection();
-          optimizePerformance();
-        });
-      }
-      
-      // Error handling for extension conflicts
-      window.addEventListener('error', function(event) {
-        const error = event.error;
-        if (error && error.stack && (
-          error.stack.includes('extension') ||
-          error.stack.includes('chrome-extension') ||
-          error.stack.includes('moz-extension') ||
-          error.stack.includes('MetaMask') ||
-          error.stack.includes('phantom')
-        )) {
-          console.debug('Caught extension error:', error.message);
-          event.preventDefault();
-          return false;
-        }
-      });
-      
-      // Performance monitoring
-      const performanceMonitor = {
-        startTime: performance.now(),
-        checkPerformance: function() {
-          const loadTime = performance.now() - this.startTime;
-          if (loadTime > 3000) {
-            console.warn('Slow page load detected:', loadTime + 'ms');
-          }
-        }
-      };
-      
-      window.addEventListener('load', function() {
-        performanceMonitor.checkPerformance();
-      });
-      
-    })();
-  </script>
-  
   <!-- Critical CSS inlined for performance -->
   <style>body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;background-color:#0f172a;color:#fff;overflow-x:hidden}.loading-fallback{align-items:center;background:#0f172a;display:flex;height:100%;justify-content:center;left:0;position:fixed;top:0;width:100%;z-index:9999}.loading-spinner{animation:spin 1s linear infinite;border:3px solid #10b981;border-radius:50%;border-top-color:transparent;height:40px;width:40px}@keyframes spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}#root:empty:before{background:#0f172a;content:"";display:block;height:100%;left:0;position:fixed;top:0;width:100%;z-index:9998}</style>
-  <script type="module" crossorigin src="/wishantbhajan/assets/index-Dx2yf4Tn.js"></script>
-  <link rel="modulepreload" crossorigin href="/wishantbhajan/js/chunk-B2cPBgOe.js">
-  <link rel="modulepreload" crossorigin href="/wishantbhajan/js/chunk-BZx1Y0xT.js">
-  <link rel="modulepreload" crossorigin href="/wishantbhajan/js/chunk-BGOHbAIP.js">
-  <link rel="modulepreload" crossorigin href="/wishantbhajan/js/chunk-Dfww8GH1.js">
-  <link rel="stylesheet" crossorigin href="/wishantbhajan/assets/index-DVmpIi3Q.css">
+  <script type="module" crossorigin src="/assets/index-B3-_-sfO.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-bcwKtWt2.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-router-D-vyc9e_.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-three-BBAFg9Pr.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-DVmpIi3Q.css">
 </head>
 <body>
   <div id="root">
@@ -198,27 +56,6 @@
       <div class="loading-spinner"></div>
     </div>
   </div>
-  
-  <!-- Performance monitoring script -->
-  <script>
-    // Basic performance monitoring
-    window.addEventListener('load', function() {
-      if ('performance' in window) {
-        const perfData = performance.getEntriesByType('navigation')[0];
-        if (perfData && perfData.loadEventEnd > 0) {
-          const loadTime = perfData.loadEventEnd - perfData.fetchStart;
-          console.log('Page load time:', Math.round(loadTime) + 'ms');
-          
-          // Log performance metrics
-          console.log('Performance metrics:', {
-            'DOM Content Loaded': Math.round(perfData.domContentLoadedEventEnd - perfData.fetchStart) + 'ms',
-            'First Paint': performance.getEntriesByType('paint')[0]?.startTime?.toFixed(0) + 'ms',
-            'Load Complete': Math.round(loadTime) + 'ms'
-          });
-        }
-      }
-    });
-  </script>
-  
+  
 </body>
 </html>
