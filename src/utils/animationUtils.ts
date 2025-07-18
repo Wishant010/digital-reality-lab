@@ -214,6 +214,14 @@ export class AnimationPerformanceMonitor {
   private lastTime = 0;
   private fps = 60;
 
+  // Cleanup when instance is destroyed
+  destroy() {
+    this.stopMonitoring();
+    if (AnimationPerformanceMonitor.instance === this) {
+      AnimationPerformanceMonitor.instance = null as any;
+    }
+  }
+
   static getInstance() {
     if (!AnimationPerformanceMonitor.instance) {
       AnimationPerformanceMonitor.instance = new AnimationPerformanceMonitor();
@@ -221,8 +229,20 @@ export class AnimationPerformanceMonitor {
     return AnimationPerformanceMonitor.instance;
   }
 
+  private monitorFrame: number | null = null;
+
+  stopMonitoring() {
+    if (this.monitorFrame !== null) {
+      window.cancelAnimationFrame(this.monitorFrame);
+      this.monitorFrame = null;
+    }
+  }
+
   startMonitoring() {
-    const monitor = () => {
+    // Stop any existing monitoring
+    this.stopMonitoring();
+    
+    const monitorFPS = () => {
       const now = performance.now();
       this.frameCount++;
       
@@ -237,10 +257,10 @@ export class AnimationPerformanceMonitor {
         }
       }
       
-      requestAnimationFrame(monitor);
+      this.monitorFrame = window.requestAnimationFrame(monitorFPS);
     };
     
-    requestAnimationFrame(monitor);
+    this.monitorFrame = window.requestAnimationFrame(monitorFPS);
   }
 
   getFPS() {
@@ -305,8 +325,10 @@ export function safeguardAnimations() {
           return originalRAF.call(window, callback);
         } catch (error) {
           console.warn('Animation frame request failed:', error);
-          // Fallback to setTimeout, but ensure callback is called with timestamp
-          return window.setTimeout(() => callback(performance.now()), 16) as any;
+          // Use requestAnimationFrame for the fallback instead of setTimeout
+          return originalRAF.call(window, () => {
+            callback(performance.now());
+          });
         }
       };
       (patchedRAF as any)._safeguarded = true;
