@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
-  base: '/wishantbhajan/', // ✅ Correct voor GitHub Pages repo-project
+  base: '/wishantbhajan/', // ✅ Belangrijk voor GitHub Pages!
   plugins: [
     react({
       babel: {
@@ -71,8 +71,8 @@ export default defineConfig({
         }
       },
       external: (id) => {
-        return id.includes('MetaMask') ||
-               id.includes('phantom') ||
+        return id.includes('MetaMask') || 
+               id.includes('phantom') || 
                id.includes('keplr') ||
                id.includes('wallet');
       }
@@ -83,9 +83,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
       'framer-motion',
       'react-error-boundary'
     ],
@@ -109,6 +109,8 @@ export default defineConfig({
     }
   },
   define: {
+    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
+    __PROD__: JSON.stringify(process.env.NODE_ENV === 'production'),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     global: 'globalThis'
   },
