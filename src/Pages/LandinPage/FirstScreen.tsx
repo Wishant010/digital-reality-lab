@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import SplashCursor from "../../components/SplashCursor"
 import LetterGlitch from "../../components/LetterGlitch"
-import Page2 from "../LandinPage/Page2"
+import Homescreen from "../Homescreenpage"
 import { useViewport, useResponsiveValue } from "../../utils/responsive"
 import type { ResponsiveValue } from "../../utils/responsive"
 
@@ -423,7 +423,7 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
           >
-            <Page2 isVisible={true} />
+            <Homescreen isVisible={true} />
           </motion.div>
         ) : (
           <motion.div
