@@ -34,7 +34,6 @@ export default defineConfig(({ command, mode }) => {
     },
     server: {
       port: 4173,
-      host: 'localhost', // Explicitly use localhost for trustworthy origin
       open: true,
       cors: true,
       hmr: {
@@ -42,34 +41,16 @@ export default defineConfig(({ command, mode }) => {
         port: 24678
       },
       headers: {
-        // Remove COOP header for development to avoid warnings
-        'Cross-Origin-Embedder-Policy': 'unsafe-none',
-        // Only set COOP for production/HTTPS
-        ...(isProduction ? {
-          'Cross-Origin-Opener-Policy': 'same-origin'
-        } : {})
+        'Cross-Origin-Embedder-Policy': 'credentialless',
+        'Cross-Origin-Opener-Policy': 'same-origin'
       }
     },
     build: {
       sourcemap: !isProduction,
-      target: ['es2022', 'chrome90', 'firefox88', 'safari15'],
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: isProduction,
-          drop_debugger: isProduction,
-          pure_funcs: isProduction ? ['console.log', 'console.debug'] : [],
-          passes: 2
-        },
-        mangle: {
-          safari10: true
-        },
-        format: {
-          comments: false
-        }
-      },
+      target: ['es2020', 'chrome80', 'firefox78', 'safari14'],
       cssCodeSplit: true,
-      chunkSizeWarningLimit: 600,
+      chunkSizeWarningLimit: 800,
+      minify: 'esbuild',
       assetsDir: 'assets',
       rollupOptions: {
         output: {
@@ -91,8 +72,7 @@ export default defineConfig(({ command, mode }) => {
             'vendor-react': ['react', 'react-dom'],
             'vendor-router': ['react-router-dom', 'react-error-boundary'],
             'vendor-animation': ['framer-motion'],
-            'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
-            'vendor-utils': ['lodash', 'date-fns', 'clsx']
+            'vendor-three': ['three', '@react-three/fiber', '@react-three/drei']
           }
         },
         external: (id) => {

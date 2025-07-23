@@ -5,91 +5,6 @@
 @tailwind utilities;
 
 /* ========================================
-   ULTRA-FAST DESKTOP PERFORMANCE CSS
-   ======================================== */
-@media (min-width: 1024px) {
-  * {
-    /* Extreme GPU acceleration for large screens */
-    will-change: auto !important;
-    transform: translate3d(0,0,0) !important;
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
-    -webkit-transform: translate3d(0,0,0) !important;
-    
-    /* Lightning-fast animations */
-    transition-duration: 0.03s !important;
-    animation-duration: 0.03s !important;
-    transition-timing-function: ease-out !important;
-    
-    /* Optimize rendering */
-    contain: layout style paint !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-  }
-  
-  html, body, #root {
-    /* Force hardware acceleration on root elements */
-    transform: translate3d(0,0,0) !important;
-    will-change: transform !important;
-    contain: layout style paint !important;
-    isolation: isolate !important;
-  }
-  
-  /* Ultra-fast scroll */
-  html {
-    scroll-behavior: auto !important;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  /* Instant loading animations */
-  .fast-load {
-    animation: ultraFastFadeIn 0.02s ease-out forwards !important;
-  }
-  
-  @keyframes ultraFastFadeIn {
-    from { 
-      opacity: 0; 
-      transform: translate3d(0,0,0) scale(0.98); 
-    }
-    to { 
-      opacity: 1; 
-      transform: translate3d(0,0,0) scale(1); 
-    }
-  }
-  
-  /* Disable heavy effects on large screens */
-  .backdrop-blur {
-    backdrop-filter: none !important;
-  }
-  
-  /* Optimize images */
-  img, video {
-    image-rendering: optimizeSpeed !important;
-    -webkit-transform: translate3d(0,0,0) !important;
-    transform: translate3d(0,0,0) !important;
-  }
-}
-
-/* ========================================
-   CRITICAL BLUR SAFETY FIX
-   ======================================== */
-/* Add a CSS custom property to control blur safely */
-:root {
-  --safe-blur: 0px;
-}
-
-/* Ensure all blur values are positive */
-.blur-safe {
-  filter: blur(max(0px, var(--safe-blur))) !important;
-}
-
-/* Override problematic blur animations */
-*[style*="blur("] {
-  filter: blur(0px) !important;
-}
-
-/* ========================================
    RESPONSIVE CSS CUSTOM PROPERTIES
    ======================================== */
 :root {
@@ -108,69 +23,55 @@
   --font-size-base: 1rem;
   --line-height-base: 1.5;
 
-  /* LIGHTNING-FAST animation durations */
-  --animation-duration: 0.1s;
-  --animation-duration-slow: 0.2s;
-  --animation-duration-fast: 0.05s;
-  
-  /* GPU-optimized easing functions */
-  --ease-fast: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Animation durations (responsive) */
+  --animation-duration: 0.3s;
+  --animation-duration-slow: 0.6s;
+  --animation-duration-fast: 0.15s;
 }
 
-/* Ultra-responsive font scale adjustments */
+/* Responsive font scale adjustments */
 @media (min-width: 768px) {
   :root {
     --font-scale-ratio: 1.2;
-    --animation-duration: 0.18s;
+    --animation-duration: 0.5s;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
     --font-scale-ratio: 1.25;
-    --animation-duration: 0.2s;
+    --animation-duration: 0.8s;
   }
 }
 
 @media (min-width: 1920px) {
   :root {
     --font-scale-ratio: 1.333;
-    --animation-duration: 0.35s;
   }
 }
 
-/* ULTRA-FAST reset with GPU acceleration */
+/* Base reset with performance optimizations */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Ultra-fast scrollbar */
   scrollbar-width: thin;
   scrollbar-color: #10b981 #1a1a1a;
-  /* Eliminate touch delays */
   -webkit-tap-highlight-color: transparent;
-  /* Optimize text selection for performance */
-  user-select: text;
-  -webkit-user-select: text;
-  /* Force GPU layer for critical elements */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  user-select: none;
 }
 
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeSpeed; /* Changed from optimizeLegibility for speed */
-  font-size: 10px; /* Responsive base */
+  text-rendering: optimizeLegibility;
+  /* Responsive font size */
+  font-size: 10px;
+  /* Prevent extension style conflicts */
   color-scheme: dark;
   background-color: #0a0a0a !important;
   overflow-x: hidden;
-  /* Force GPU acceleration */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
 
 @media (min-width: 1024px) {
@@ -190,17 +91,12 @@ body {
   background: #0a0a0a !important;
   color: #f8f8ff;
   overflow-x: hidden;
-  /* ULTRA-GPU acceleration */
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   -webkit-perspective: 1000px;
   perspective: 1000px;
-  /* Optimize rendering */
-  contain: layout style paint;
-  /* Force hardware acceleration */
-  will-change: auto;
   /* Prevent browser extension style injection */
   isolation: isolate;
 }

@@ -115,7 +115,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
             opacity: 0,
             y: prefersReducedMotion ? 0 : 50,
             scale: prefersReducedMotion ? 1 : 0.3,
-            filter: "blur(5px)", // Safe positive start value
+            filter: "blur(5px)", // Start with a positive blur value
             rotateX: prefersReducedMotion ? 0 : -90,
           }}
           animate={
@@ -124,7 +124,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
                   opacity: 1,
                   y: 0,
                   scale: 1,
-                  filter: "blur(0px)", // Safe zero end value
+                  filter: "blur(0px)",
                   rotateX: 0,
                 }
               : {}
@@ -179,7 +179,7 @@ const AccessGranted: React.FC<AccessGrantedProps> = ({ onComplete }) => {
         <span
           className="text-blue-400"
           style={{
-            textShadow: "0 0 8px #3b82f6, 0 0 12px #3b82f650",
+            textShadow: "0 0 10px #3b82f6, 0 0 20px #3b82f6",
           }}
         >
           {displayText}
@@ -360,7 +360,7 @@ const HomePage: React.FC = () => {
     setButtonClicked(true)
     setButtonState("expanded")
 
-    const timer1 = setTimeout(() => setButtonState("glitch"), 1800)
+    const timer1 = setTimeout(() => setButtonState("glitch"), 800)
     timersRef.current.push(timer1)
   }, [buttonClicked])
 

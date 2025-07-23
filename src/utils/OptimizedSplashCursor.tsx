@@ -7,18 +7,15 @@ interface OptimizedSplashCursorProps {
   throttleDelay?: number;
 }
 
-// ULTRA-HIGH-PERFORMANCE Splash Cursor with 60fps+ guarantee
 const OptimizedSplashCursor = ({ 
   isActive = true,
-  maxParticles = 12, // Further reduced for ultra-smooth performance
-  particleLifespan = 25, // Faster lifecycle
-  throttleDelay = 12 // More responsive but still optimized
+  maxParticles = 30, // Reduced from 50
+  particleLifespan = 45, // Reduced from 60
+  throttleDelay = 20 // Increased from 16
 }: OptimizedSplashCursorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isRunning = useRef(false);
   const animationId = useRef<number | undefined>(undefined);
-  const lastFrameTime = useRef(0);
-  const frameCount = useRef(0);
   
   const mousePos = useRef({ x: 0, y: 0 });
   const particles = useRef<Array<{
@@ -32,31 +29,31 @@ const OptimizedSplashCursor = ({
     color: { r: number; g: number; b: number };
   }>>([]);
 
-  // Ultra-optimized color palette with precomputed values
+  // Memoized color palette for performance
   const colorPalette = useMemo(() => [
-    { r: 16, g: 185, b: 129 },   // Emerald
-    { r: 20, g: 184, b: 166 },   // Teal
-    { r: 34, g: 197, b: 94 },    // Green
-    { r: 14, g: 165, b: 233 }    // Sky
+    { r: 16, g: 185, b: 129 },
+    { r: 56, g: 225, b: 159 },
+    { r: 96, g: 265, b: 189 },
+    { r: 126, g: 205, b: 149 }
   ], []);
 
-  // Lightning-fast throttle with minimal overhead
+  // Optimized throttle with cleanup
   const throttle = useCallback((func: Function, limit: number) => {
-    let lastCall = 0;
+    let inThrottle = false;
     return (...args: any[]) => {
-      const now = performance.now();
-      if (now - lastCall >= limit) {
-        lastCall = now;
+      if (!inThrottle) {
         func.apply(null, args);
+        inThrottle = true;
+        setTimeout(() => (inThrottle = false), limit);
       }
     };
   }, []);
 
-  // Ultra-fast particle creation with pool reuse
+  // Performance-optimized particle creation
   const addParticle = useCallback((x: number, y: number) => {
-    // Aggressive particle management
     if (particles.current.length >= maxParticles) {
-      particles.current.splice(0, Math.floor(maxParticles * 0.3)); // Remove 30% in batch
+      // Remove oldest particle instead of skipping
+      particles.current.shift();
     }
     
     const colorIndex = Math.floor(Math.random() * colorPalette.length);
@@ -65,20 +62,20 @@ const OptimizedSplashCursor = ({
     particles.current.push({
       x,
       y,
-      vx: (Math.random() - 0.5) * 2, // Reduced velocity for smoother motion
-      vy: (Math.random() - 0.5) * 2,
+      vx: (Math.random() - 0.5) * 3, // Reduced velocity
+      vy: (Math.random() - 0.5) * 3,
       life: particleLifespan,
       maxLife: particleLifespan,
-      size: Math.random() * 1.8 + 0.4, // Smaller, more efficient particles
+      size: Math.random() * 2.5 + 0.5, // Smaller particles
       color: {
-        r: Math.min(255, baseColor.r + (Math.random() * 30 - 15)),
-        g: Math.min(255, baseColor.g + (Math.random() * 30 - 15)),
-        b: Math.min(255, baseColor.b + (Math.random() * 20 - 10))
+        r: Math.min(255, baseColor.r + Math.random() * 50),
+        g: Math.min(255, baseColor.g + Math.random() * 50),
+        b: Math.min(255, baseColor.b + Math.random() * 30)
       }
     });
   }, [maxParticles, particleLifespan, colorPalette]);
 
-  // ULTRA-OPTIMIZED render loop with delta timing and frame skipping
+  // Highly optimized render loop with RAF management
   const render = useCallback(() => {
     if (!isActive || !canvasRef.current || !isRunning.current) {
       if (animationId.current) {
@@ -89,79 +86,60 @@ const OptimizedSplashCursor = ({
     }
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d', { 
-      alpha: false, // Better performance without alpha
-      willReadFrequently: false,
-      desynchronized: true // Better performance
-    });
+    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: false });
     if (!ctx) return;
 
-    const now = performance.now();
-    const deltaTime = now - lastFrameTime.current;
-    
-    // Frame rate limiting for consistent performance
-    if (deltaTime < 16.67) { // ~60fps cap
-      animationId.current = requestAnimationFrame(render);
-      return;
-    }
-    
-    lastFrameTime.current = now;
-    frameCount.current++;
-
-    // Adaptive canvas sizing with performance check
+    // Optimized canvas sizing with debouncing
     const currentWidth = window.innerWidth;
     const currentHeight = window.innerHeight;
     
     if (canvas.width !== currentWidth || canvas.height !== currentHeight) {
       canvas.width = currentWidth;
       canvas.height = currentHeight;
-      canvas.style.width = currentWidth + 'px';
-      canvas.style.height = currentHeight + 'px';
     }
 
-    // Ultra-fast clear with optimized trail
-    ctx.fillStyle = '#000000'; // Solid black for better performance
+    // Enhanced trail effect for smoother visuals
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Batch particle processing with optimized loop
-    const particleArray = particles.current;
-    const particleCount = particleArray.length;
+    // Batch particle updates and drawing
+    ctx.save();
     
-    // Process particles in reverse order for safe removal
-    for (let i = particleCount - 1; i >= 0; i--) {
-      const p = particleArray[i];
+    for (let i = particles.current.length - 1; i >= 0; i--) {
+      const p = particles.current[i];
       
-      // Ultra-fast physics update
+      // Update particle physics
       p.x += p.vx;
       p.y += p.vy;
       p.life--;
-      p.vx *= 0.98; // Optimized damping
-      p.vy *= 0.98;
+      p.vx *= 0.985; // Slightly more damping
+      p.vy *= 0.985;
 
-      // Fast removal of dead particles
+      // Remove dead particles
       if (p.life <= 0) {
-        particleArray.splice(i, 1);
+        particles.current.splice(i, 1);
         continue;
       }
 
-      // Optimized rendering with single draw call
-      const alpha = p.life / p.maxLife;
-      const size = p.size * alpha;
+      // Optimized alpha calculation
+      const alpha = (p.life / p.maxLife) * 0.8;
+      const size = p.size * Math.sqrt(alpha); // Smooth size transition
       
-      ctx.globalAlpha = alpha * 0.9;
-      ctx.fillStyle = `rgb(${p.color.r},${p.color.g},${p.color.b})`;
+      // Single draw call per particle
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = `rgb(${p.color.r}, ${p.color.g}, ${p.color.b})`;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, size, 0, 6.28318530718); // Use constant instead of Math.PI * 2
+      ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
       ctx.fill();
     }
     
-    ctx.globalAlpha = 1; // Reset alpha
+    ctx.restore();
 
-    // Continue with next frame
+    // Continue animation with proper cleanup
     animationId.current = requestAnimationFrame(render);
   }, [isActive]);
 
-  // Ultra-responsive mouse movement with distance optimization
+  // Optimized mouse handlers with better movement detection
   const handleMouseMove = useCallback(
     throttle((e: MouseEvent) => {
       const prevX = mousePos.current.x;
@@ -169,38 +147,37 @@ const OptimizedSplashCursor = ({
       
       mousePos.current = { x: e.clientX, y: e.clientY };
       
-      // Fast distance calculation with optimization
-      const dx = e.clientX - prevX;
-      const dy = e.clientY - prevY;
-      const distanceSquared = dx * dx + dy * dy; // Avoid sqrt for performance
+      const distance = Math.sqrt(
+        Math.pow(e.clientX - prevX, 2) + Math.pow(e.clientY - prevY, 2)
+      );
       
-      // Only create particles for meaningful movement (optimized threshold)
-      if (distanceSquared > 9 && distanceSquared < 10000) { // 3² to 100²
+      // Only create particles for meaningful movement
+      if (distance > 3 && distance < 100) {
         addParticle(e.clientX, e.clientY);
       }
     }, throttleDelay),
     [throttle, addParticle, throttleDelay]
   );
 
-  // Ultra-fast click burst with optimized pattern
+  // Enhanced click effect with burst pattern
   const handleClick = useCallback(
     throttle((e: MouseEvent) => {
-      const burstCount = 6; // Reduced for better performance
-      const burstRadius = 12;
-      const angleStep = 1.0471975512; // 60 degrees in radians (360/6)
+      const burstCount = 8; // Reduced from 10
+      const burstRadius = 15;
       
       for (let i = 0; i < burstCount; i++) {
-        const angle = i * angleStep;
+        const angle = (i / burstCount) * Math.PI * 2;
         const distance = Math.random() * burstRadius;
-        const x = e.clientX + Math.cos(angle) * distance;
-        const y = e.clientY + Math.sin(angle) * distance;
-        addParticle(x, y);
+        addParticle(
+          e.clientX + Math.cos(angle) * distance,
+          e.clientY + Math.sin(angle) * distance
+        );
       }
-    }, 100), // Faster cooldown
+    }, 150), // Increased cooldown
     [throttle, addParticle]
   );
 
-  // Ultra-efficient lifecycle management
+  // Enhanced lifecycle management
   useEffect(() => {
     if (!isActive) {
       isRunning.current = false;
@@ -208,19 +185,18 @@ const OptimizedSplashCursor = ({
         cancelAnimationFrame(animationId.current);
         animationId.current = undefined;
       }
-      particles.current.length = 0; // Fast array clear
+      particles.current = [];
       return;
     }
 
     isRunning.current = true;
-    lastFrameTime.current = performance.now();
 
-    // High-performance event listeners with minimal options
-    const options = { passive: true, capture: false };
-    document.addEventListener('mousemove', handleMouseMove, options);
-    document.addEventListener('click', handleClick, options);
+    // Passive event listeners for better performance
+    const passiveOptions = { passive: true };
+    document.addEventListener('mousemove', handleMouseMove, passiveOptions);
+    document.addEventListener('click', handleClick, passiveOptions);
 
-    // Start ultra-optimized render loop
+    // Start optimized render loop
     animationId.current = requestAnimationFrame(render);
 
     return () => {
@@ -229,7 +205,7 @@ const OptimizedSplashCursor = ({
         cancelAnimationFrame(animationId.current);
         animationId.current = undefined;
       }
-      particles.current.length = 0;
+      particles.current = [];
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleClick);
     };
@@ -244,11 +220,9 @@ const OptimizedSplashCursor = ({
       style={{
         width: '100vw',
         height: '100vh',
-        mixBlendMode: 'normal', // Changed from 'screen' for better performance
-        willChange: 'auto', // Let browser decide
-        imageRendering: 'auto',
-        transform: 'translateZ(0)', // Force GPU layer
-        backfaceVisibility: 'hidden'
+        mixBlendMode: 'screen',
+        willChange: 'transform', // GPU acceleration hint
+        imageRendering: 'auto'
       }}
     />
   );
