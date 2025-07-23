@@ -156,118 +156,130 @@ module.exports = {
         '12xl': ['14rem', { lineHeight: '1' }],
       },
 
-      // Enhanced animations combining both files
+      // ULTRA-HIGH-PERFORMANCE animations - all optimized for 60fps+
       animation: {
-        // From file 1
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'fade-in-up': 'fadeInUp 0.6s ease-out',
-        'fade-in-down': 'fadeInDown 0.6s ease-out',
-        'slide-in-left': 'slideInLeft 0.5s ease-out',
-        'slide-in-right': 'slideInRight 0.5s ease-out',
-        'scale-in': 'scaleIn 0.4s ease-out',
-        'bounce-subtle': 'bounceSubtle 0.6s ease-out',
-        'glow': 'glow 2s ease-in-out infinite alternate',
-        'float': 'float 3s ease-in-out infinite',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        // Lightning-fast core animations
+        'fade-in': 'fadeIn 0.12s cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'fade-in-up': 'fadeInUp 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+        'fade-in-down': 'fadeInDown 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-in-left': 'slideInLeft 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-in-right': 'slideInRight 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
+        'scale-in': 'scaleIn 0.1s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'bounce-subtle': 'bounceSubtle 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
         
-        // Additional from file 2
-        'fade-in-slow': 'fadeIn 1s ease-out',
-        'fade-in-fast': 'fadeIn 0.3s ease-out',
-        'fade-out': 'fadeOut 0.5s ease-out',
-        'scale-out': 'scaleOut 0.5s ease-out',
-        'slide-up': 'slideUp 0.5s ease-out',
-        'slide-down': 'slideDown 0.5s ease-out',
-        'slide-left': 'slideLeft 0.5s ease-out',
-        'slide-right': 'slideRight 0.5s ease-out',
-        'bounce-soft': 'bounceSoft 1s ease-in-out',
-        'wiggle': 'wiggle 1s ease-in-out infinite',
-        'spin-slow': 'spin 3s linear infinite',
+        // Ultra-smooth continuous animations
+        'glow': 'glow 1.5s ease-in-out infinite alternate',
+        'float': 'float 2s ease-in-out infinite',
+        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        
+        // Speed variants
+        'fade-in-fast': 'fadeIn 0.15s ease-out',
+        'fade-in-slow': 'fadeIn 0.4s ease-out',
+        'fade-out': 'fadeOut 0.2s ease-out',
+        'scale-out': 'scaleOut 0.2s ease-out',
+        
+        // Ultra-responsive slides
+        'slide-up': 'slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-down': 'slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-left': 'slideLeft 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-right': 'slideRight 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        
+        // Optimized interactions
+        'bounce-soft': 'bounceSoft 0.6s ease-in-out',
+        'wiggle': 'wiggle 0.5s ease-in-out infinite',
+        'spin-slow': 'spin 2s linear infinite',
         'spin-fast': 'spin 0.5s linear infinite',
-        'pulse-soft': 'pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'pulse-fast': 'pulseFast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-soft': 'pulseSoft 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-fast': 'pulseFast 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
 
-      // Combined keyframes from both files
+      // ULTRA-OPTIMIZED keyframes for maximum performance
       keyframes: {
-        // From file 1
+        // Core ultra-fast animations
         fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          '0%': { opacity: '0', transform: 'translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateZ(0)' },
         },
         fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(30px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translateY(20px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateY(0) translateZ(0)' },
         },
         fadeInDown: {
-          '0%': { opacity: '0', transform: 'translateY(-30px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translateY(-20px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateY(0) translateZ(0)' },
         },
         slideInLeft: {
-          '0%': { opacity: '0', transform: 'translateX(-50px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          '0%': { opacity: '0', transform: 'translateX(-30px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateX(0) translateZ(0)' },
         },
         slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(50px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          '0%': { opacity: '0', transform: 'translateX(30px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateX(0) translateZ(0)' },
         },
         scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.8)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
+          '0%': { opacity: '0', transform: 'scale(0.9) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateZ(0)' },
         },
         bounceSubtle: {
-          '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
-          '40%': { transform: 'translateY(-10px)' },
-          '60%': { transform: 'translateY(-5px)' },
-        },
-        glow: {
-          '0%': { boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)' },
-          '100%': { boxShadow: '0 0 30px rgba(16, 185, 129, 0.6)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' },
+          '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0) translateZ(0)' },
+          '40%': { transform: 'translateY(-8px) translateZ(0)' },
+          '60%': { transform: 'translateY(-4px) translateZ(0)' },
         },
         
-        // Additional from file 2
+        // Continuous animations optimized for performance
+        glow: {
+          '0%': { boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)' },
+          '100%': { boxShadow: '0 0 25px rgba(16, 185, 129, 0.6)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px) translateZ(0)' },
+          '50%': { transform: 'translateY(-15px) translateZ(0)' },
+        },
+        
+        // Exit animations
         fadeOut: {
-          '0%': { opacity: '1', transform: 'translateY(0)' },
-          '100%': { opacity: '0', transform: 'translateY(-20px)' },
+          '0%': { opacity: '1', transform: 'translateY(0) translateZ(0)' },
+          '100%': { opacity: '0', transform: 'translateY(-15px) translateZ(0)' },
         },
         scaleOut: {
-          '0%': { opacity: '1', transform: 'scale(1)' },
-          '100%': { opacity: '0', transform: 'scale(0.9)' },
+          '0%': { opacity: '1', transform: 'scale(1) translateZ(0)' },
+          '100%': { opacity: '0', transform: 'scale(0.95) translateZ(0)' },
         },
+        
+        // Directional slides with reduced movement
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(100%)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translateY(40px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateY(0) translateZ(0)' },
         },
         slideDown: {
-          '0%': { opacity: '0', transform: 'translateY(-100%)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translateY(-40px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateY(0) translateZ(0)' },
         },
         slideLeft: {
-          '0%': { opacity: '0', transform: 'translateX(100%)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          '0%': { opacity: '0', transform: 'translateX(40px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateX(0) translateZ(0)' },
         },
         slideRight: {
-          '0%': { opacity: '0', transform: 'translateX(-100%)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
+          '0%': { opacity: '0', transform: 'translateX(-40px) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateX(0) translateZ(0)' },
         },
+        
+        // Subtle interactions
         bounceSoft: {
-          '0%, 100%': { transform: 'translateY(-5%)' },
-          '50%': { transform: 'translateY(0)' },
+          '0%, 100%': { transform: 'translateY(-3%) translateZ(0)' },
+          '50%': { transform: 'translateY(0) translateZ(0)' },
         },
         wiggle: {
-          '0%, 100%': { transform: 'rotate(-3deg)' },
-          '50%': { transform: 'rotate(3deg)' },
+          '0%, 100%': { transform: 'rotate(-2deg) translateZ(0)' },
+          '50%': { transform: 'rotate(2deg) translateZ(0)' },
         },
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.8' },
+          '50%': { opacity: '0.9' },
         },
         pulseFast: {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.5' },
+          '50%': { opacity: '0.7' },
         },
       },
 

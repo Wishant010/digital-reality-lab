@@ -305,7 +305,7 @@ const NavbarMenu = ({ isVisible }: NavbarMenuProps) => {
         animate={{ 
           y: isVisible ? 0 : -120,
           opacity: isVisible ? 1 : 0,
-          filter: isVisible ? "blur(0px)" : "blur(10px)"
+          filter: isVisible ? "blur(0px)" : "blur(5px)" // Keep positive values
         }}
         transition={{ 
           duration: 1.2, 

@@ -115,7 +115,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
             opacity: 0,
             y: prefersReducedMotion ? 0 : 50,
             scale: prefersReducedMotion ? 1 : 0.3,
-            filter: "blur(5px)", // Start with a positive blur value
+            filter: "blur(5px)", // Safe positive start value
             rotateX: prefersReducedMotion ? 0 : -90,
           }}
           animate={
@@ -124,7 +124,7 @@ const AnimatedName: React.FC<AnimatedNameProps> = ({ text, delay = 0, className 
                   opacity: 1,
                   y: 0,
                   scale: 1,
-                  filter: "blur(0px)",
+                  filter: "blur(0px)", // Safe zero end value
                   rotateX: 0,
                 }
               : {}
