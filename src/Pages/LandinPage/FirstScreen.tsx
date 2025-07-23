@@ -179,7 +179,7 @@ const AccessGranted: React.FC<AccessGrantedProps> = ({ onComplete }) => {
         <span
           className="text-blue-400"
           style={{
-            textShadow: "0 0 10px #3b82f6, 0 0 20px #3b82f6",
+            textShadow: "0 0 8px #3b82f6, 0 0 12px #3b82f650",
           }}
         >
           {displayText}
@@ -360,7 +360,7 @@ const HomePage: React.FC = () => {
     setButtonClicked(true)
     setButtonState("expanded")
 
-    const timer1 = setTimeout(() => setButtonState("glitch"), 800)
+    const timer1 = setTimeout(() => setButtonState("glitch"), 1800)
     timersRef.current.push(timer1)
   }, [buttonClicked])
 
